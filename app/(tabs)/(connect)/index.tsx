@@ -1,0 +1,31 @@
+import 'react-native-gesture-handler'
+import { View } from '../../../components/Themed';
+
+import { Stack, useRouter, Link } from 'expo-router';
+import styles from "../../../constants/Style"
+import { ApplicationProvider, Button, Divider, Layout, Text } from '@ui-kitten/components';
+import * as eva from '@eva-design/eva';
+import { default as theme } from "../../../theme.json"
+
+export default function Home() {
+
+  return (
+    <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
+      <Layout style={styles.container}>
+        <Text category='h2'>Choose your device type</Text>
+        <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+        <Link href="/LABconnect" asChild>
+          <Button style={styles.button}>
+            <Text>Lab</Text>
+          </Button>
+        </Link>
+
+        <Link href="../LABconnect" asChild>
+          <Button style={styles.button}>
+            <Text style={styles.buttonText}>Portable</Text>
+          </Button>
+        </Link>
+      </Layout>
+    </ApplicationProvider>
+  );
+}
