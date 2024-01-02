@@ -12,7 +12,7 @@ export default StyleSheet.create({
     padding: '5%'
   },
   separator: {
-    marginVertical: 30,
+    marginVertical: 10,
     height: 1,
     width: '80%',
   },
