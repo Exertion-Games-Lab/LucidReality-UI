@@ -1,5 +1,5 @@
 import { Link, Stack } from 'expo-router';
-import { Pressable, SafeAreaView, StyleSheet, ScrollView, Image } from 'react-native';
+import { Pressable, SafeAreaView, StyleSheet, ScrollView } from 'react-native';
 
 import styles from "../../../constants/Style";
 
@@ -9,6 +9,7 @@ import { default as theme } from "../../../theme.json";
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import { View } from '../../../components/Themed';
 import { PropsWithChildren } from 'react';
+import { Image } from 'expo-image';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
@@ -35,22 +36,28 @@ export default function introToSystem() {
                             <Text category='h4'>Our system and approach</Text>
                             <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
                         </Layout>
+
+                        <Layout style={styles.container}>
+                        <Text style={stylesScreen.boldText} category='p1'>Our system consists of 3 major components</Text>
+                        </Layout>
+
                         <Card style={styles.card}>
-                            <Text style={stylesScreen.titleCard} category='h6'>WBTB (Wake back to bed)</Text>
-                            <Text category='p1'> </Text>
+                            <Text style={stylesScreen.boldText} category='h6'>Stimulus devices</Text>
+                            <Text category='p1'>Stimulus devices include any devices that will directly aid in helping lucidity. For example, in the most basic setup, LEDs and Speakers are both devices that help a user reach lucidity. Other devices such as TACs, EMS, bubbler can all provide extra help to achive lucidity and modify content.</Text>
+                            <Text category='p1'>{'\n'}For now this app only supports LED and Audio but additional support is coming</Text>
                         </Card>
  
                         {
                             // Image of lab setup
                         }
                         <Layout style={styles.container}>
-                            <Image style={stylesScreen.image} source={imgLabSetup} />
+                            <Image style={stylesScreen.image} placeholder= {blurhash} source={imgLabSetup} />
                         </Layout>
 
                         <Card style={styles.card}>
-                            <Text style={stylesScreen.titleCard} category='h6'>When do Lucid Dreams Happen?</Text>
-                            <Text category='p1'>Lucid dreams are most common during rapid eye movement (REM) sleep, a period of very deep sleep marked by eye motion, faster breathing, and more brain activity.
-                                You usually enter REM sleep about 90 minutes after falling asleep. It lasts about 10 minutes. As you sleep, each REM period is longer than the one before, finally lasting up to an hour.</Text>
+                            <Text style={stylesScreen.boldText} category='h6'>Sleep Tracker</Text>
+                            <Text category='p1'>The sleep tracker is responsible for collecting EEG data (for sleep processing) and EOG (to detect eye movement) when you are sleeping.</Text>
+                            <Text category='p1'>{'\n'}Using this data our algorithm detects REM stages and activates stimulus accordingly</Text>
                         </Card>
 
                         {
@@ -61,8 +68,9 @@ export default function introToSystem() {
                         </Layout>
 
                         <Card style={styles.card}>
-                            <Text style={stylesScreen.titleCard} category='h6'>Benifits of lucid dreaming</Text>
-                            <Text category='p1'> Benefits here</Text>
+                            <Text style={stylesScreen.boldText} category='h6'>Server</Text>
+                            <Text category='p1'>Our server is the brains of our system. Informations is automatically sent from the sleep tracker to the server, where data is further processed and stimulus outputs are activated</Text>
+                            <Text category='p1'>{'\n'}It is important to ensure you are connected before starting a Lucid Dream session</Text>
                         </Card>
 
                         {
@@ -73,8 +81,16 @@ export default function introToSystem() {
                         </Layout>
 
                         <Card style={styles.card}>
-                            <Text style={stylesScreen.titleCard} category='h6'>Dangers of lucid dreaming</Text>
-                            <Text category='p1'> Dangers here</Text>
+                            <Text style={stylesScreen.titleCard} category='h6'>Our Approach</Text>
+                            <Text category='p1'>Our approach is based on the lucid dream technique 'Wake Back to Bed (WBTB)'. </Text>
+                            <Text category='p1' style={stylesScreen.boldText}> Step 1 - PLAY VR: </Text>
+                            <Text category='p1'>Spend up to half hour playing VR. This will aid in dreaming about your chosen VR topic.  </Text>
+                            <Text category='p1' style={stylesScreen.boldText}> Step 2 - SLEEP SESSION: </Text>
+                            <Text category='p1'>Sleep as you normally would at night, recommended for minimum 4 hours. </Text>
+                            <Text category='p1' style={stylesScreen.boldText}> Step 3 -  STAY AWAKE: </Text>
+                            <Text category='p1'>Spend half hour staying awake. This is a good time to consume further content related to what you may want to LD </Text>
+                            <Text category='p1' style={stylesScreen.boldText}> Step 4 - LUCID DREAM: </Text>
+                            <Text category='p1'>Go back to bed and enjoy your lucid dream </Text>
                         </Card>
 
                     </ScrollView>
@@ -118,5 +134,9 @@ const stylesScreen = StyleSheet.create({
         padding: 1,
         borderRadius: 30,
         margin: 10,
-    }
+    },
+    boldText: {
+        fontWeight: 'bold',
+        paddingVertical: 5,
+      },
 });
