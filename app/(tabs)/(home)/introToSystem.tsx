@@ -1,5 +1,5 @@
 import { Link, Stack } from 'expo-router';
-import { Pressable, SafeAreaView, StyleSheet, ScrollView } from 'react-native';
+import { Pressable, SafeAreaView, StyleSheet, ScrollView, Image } from 'react-native';
 
 import styles from "../../../constants/Style";
 
@@ -8,10 +8,19 @@ import * as eva from '@eva-design/eva';
 import { default as theme } from "../../../theme.json";
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import { View } from '../../../components/Themed';
+import { PropsWithChildren } from 'react';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
 );
+
+const blurhash =
+    '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';
+
+//Pics needed for this screen
+import imgSleepTracker from '../../../assets/images/DSC00181.png'
+import imgLabUser from '../../../assets/images/DSC00187.png'
+import imgLabSetup from '../../../assets/images/DSC00211.png'
 
 export default function introToSystem() {
     return (
@@ -19,6 +28,7 @@ export default function introToSystem() {
             <IconRegistry icons={EvaIconsPack} />
             <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
                 <Stack.Screen options={{ title: '' }} />
+
                 <Layout style={styles.container}>
                     <ScrollView>
                         <Layout style={stylesScreen.titleContainer}>
@@ -26,11 +36,16 @@ export default function introToSystem() {
                             <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
                         </Layout>
                         <Card style={styles.card}>
-                            <Text style={stylesScreen.titleCard} category='h6'>What is Lucid Dreaming?</Text>
-                            <Text category='p1'>Lucid dreams are when you know that you’re dreaming while you’re asleep.
-                                You’re aware that the events flashing through your brain aren’t really happening. But the dream feels vivid and real. You may even be able to control how the action unfolds, as if you’re directing a movie in your sleep.
-                                Studies suggest that about half of people may have had at least one lucid dream. But they probably don’t happen often, usually only a handful of times in a year.</Text>
+                            <Text style={stylesScreen.titleCard} category='h6'>WBTB (Wake back to bed)</Text>
+                            <Text category='p1'> </Text>
                         </Card>
+ 
+                        {
+                            // Image of lab setup
+                        }
+                        <Layout style={styles.container}>
+                            <Image style={stylesScreen.image} source={imgLabSetup} />
+                        </Layout>
 
                         <Card style={styles.card}>
                             <Text style={stylesScreen.titleCard} category='h6'>When do Lucid Dreams Happen?</Text>
@@ -38,10 +53,24 @@ export default function introToSystem() {
                                 You usually enter REM sleep about 90 minutes after falling asleep. It lasts about 10 minutes. As you sleep, each REM period is longer than the one before, finally lasting up to an hour.</Text>
                         </Card>
 
+                        {
+                            // Image of sleep tracker setup
+                        }
+                        <Layout style={styles.container}>
+                            <Image style={stylesScreen.image} source={imgSleepTracker} />
+                        </Layout>
+
                         <Card style={styles.card}>
                             <Text style={stylesScreen.titleCard} category='h6'>Benifits of lucid dreaming</Text>
                             <Text category='p1'> Benefits here</Text>
                         </Card>
+
+                        {
+                            // Image of lab setup with user Sleeping
+                        }
+                        <Layout style={styles.container}>
+                            <Image style={stylesScreen.image} source={imgLabUser} />
+                        </Layout>
 
                         <Card style={styles.card}>
                             <Text style={stylesScreen.titleCard} category='h6'>Dangers of lucid dreaming</Text>
@@ -68,5 +97,26 @@ const stylesScreen = StyleSheet.create({
     },
     titleCard: {
         marginBottom: 10,
-      },
+    },
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    image: {
+        flex: 1,
+        width: 325,
+        height: 200,
+        backgroundColor: '#0553',
+        borderRadius: 30,
+    },
+
+    imageCard: {
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        width: 'auto',
+        padding: 1,
+        borderRadius: 30,
+        margin: 10,
+    }
 });
