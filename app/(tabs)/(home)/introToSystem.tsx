@@ -10,6 +10,13 @@ import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import { View } from '../../../components/Themed';
 import { PropsWithChildren } from 'react';
 import { Image } from 'expo-image';
+import {
+    Accordion,
+    AccordionItem,
+    AccordionItemHeading,
+    AccordionItemButton,
+    AccordionItemPanel,
+} from 'react-accessible-accordion';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
@@ -79,7 +86,6 @@ export default function introToSystem() {
                         <Layout style={styles.container}>
                             <Image style={stylesScreen.image} source={imgLabUser} />
                         </Layout>
-
                         <Card style={styles.card}>
                             <Text style={stylesScreen.titleCard} category='h6'>Our Approach</Text>
                             <Text category='p1'>Our approach is based on the lucid dream technique 'Wake Back to Bed (WBTB)'. </Text>
