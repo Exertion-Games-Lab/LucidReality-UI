@@ -9,10 +9,10 @@ import Slider from '@react-native-community/slider';
 import React, { useState } from 'react';
 import axios from 'axios';
 
-export default function LABconnect() {
+export default function Portableconnect() {
   const [sliderValueLED, setSliderValueLED] = useState<number>(20);
   const [sliderValueSound, setSliderValueSound] = useState(50);
-  const [baseURL, setBaseURL] = useState<string>('http://192.168.1.7');
+  const [baseURL, setBaseURL] = useState<string>('http://192.168.1.64');
   const [visible, setVisible] = React.useState(false);
   const [port, setPort] = useState<string>('8080');
 
@@ -31,7 +31,7 @@ export default function LABconnect() {
         },
       };
 
-      await axios.post(`${postURL}/command/1/VisualStimulus`, payload);
+      await axios.post(`${postURL}/command/2/VisualStimulus`, payload);
       console.log('Visual stimulus sent successfully. Brightness: ' + payload.brightness + ' postURL: ' + postURL);
     } catch (error) {
       console.error('Error sending visual stimulus:', error);
@@ -47,7 +47,7 @@ export default function LABconnect() {
         duration: 10000
       };
 
-      await axios.post(`${postURL}/command/2/Audio`, payload);
+      await axios.post(`${postURL}/command/3/Audio`, payload);
       console.log('Audio stimulus sent successfully. Volume: ' + payload.volume);
     } catch (error) {
       console.error('Error sending visual stimulus:', error);

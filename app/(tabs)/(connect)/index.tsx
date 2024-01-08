@@ -20,7 +20,7 @@ export default function Home() {
           </Button>
         </Link>
 
-        <Link href="../LABconnect" asChild>
+        <Link href="../PORTABLEconnect" asChild>
           <Button style={styles.button}>
             <Text style={styles.buttonText}>Portable</Text>
           </Button>

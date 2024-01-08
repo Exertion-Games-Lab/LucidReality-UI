@@ -7,7 +7,7 @@ declare module "expo-router" {
   export * from 'expo-router/build';
 
   // prettier-ignore
-  type StaticRoutes = `/` | `/(tabs)/(connect)/LABconnect` | `/LABconnect` | `/(tabs)/(connect)/_layout` | `/_layout` | `/(tabs)/(connect)/` | `/(tabs)/(connect)` | `/(tabs)/(home)/_layout` | `/(tabs)/(home)/index.d` | `/index.d` | `/(tabs)/(home)/` | `/(tabs)/(home)` | `/(tabs)/(home)/introToLD` | `/introToLD` | `/(tabs)/(home)/introToSystem` | `/introToSystem` | `/(tabs)/(home)/lucidDream` | `/lucidDream` | `/(tabs)/(home)/overnight` | `/overnight` | `/(tabs)/(home)/playVR` | `/playVR` | `/(tabs)/(home)/stayAwake` | `/stayAwake` | `/(tabs)/(home)/uninterruptedSleep` | `/uninterruptedSleep` | `/(tabs)/_layout` | `/+html` | `/connection/introToSystem` | `/connection/setupGuide` | `/modal` | `/nap`;
+  type StaticRoutes = `/` | `/(tabs)/(connect)/LABconnect` | `/LABconnect` | `/(tabs)/(connect)/PORTABLEconnect` | `/PORTABLEconnect` | `/(tabs)/(connect)/_layout` | `/_layout` | `/(tabs)/(connect)/` | `/(tabs)/(connect)` | `/(tabs)/(home)/_layout` | `/(tabs)/(home)/index.d` | `/index.d` | `/(tabs)/(home)/` | `/(tabs)/(home)` | `/(tabs)/(home)/introToLD` | `/introToLD` | `/(tabs)/(home)/introToSystem` | `/introToSystem` | `/(tabs)/(home)/lucidDream` | `/lucidDream` | `/(tabs)/(home)/overnight` | `/overnight` | `/(tabs)/(home)/playVR` | `/playVR` | `/(tabs)/(home)/stayAwake` | `/stayAwake` | `/(tabs)/(home)/uninterruptedSleep` | `/uninterruptedSleep` | `/(tabs)/_layout` | `/+html` | `/connection/introToSystem` | `/connection/setupGuide` | `/modal` | `/nap`;
   // prettier-ignore
   type DynamicRoutes<T extends string> = never;
   // prettier-ignore
