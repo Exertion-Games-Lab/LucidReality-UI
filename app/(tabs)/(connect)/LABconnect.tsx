@@ -2,7 +2,7 @@ import { StyleSheet, Alert } from 'react-native';
 import { View } from '../../../components/Themed';
 
 import styles from "../../../constants/Style"
-import { ApplicationProvider, Button, Divider, Layout, Text, Modal, Card } from '@ui-kitten/components';
+import { ApplicationProvider, Button, Divider, Layout, Text, Modal, Card, Input } from '@ui-kitten/components';
 import * as eva from '@eva-design/eva';
 import { default as theme } from "../../../theme.json";
 import Slider from '@react-native-community/slider';
@@ -14,6 +14,10 @@ export default function LABconnect() {
   const [sliderValueSound, setSliderValueSound] = useState(5);
   const [baseURL, setBaseURL] = useState<string>('http://192.168.1.64:8080');
   const [visible, setVisible] = React.useState(false);
+  const [port, setPort] = useState<string>('8080');
+
+  //Where we post to server after getting the base IP and port
+  const postURL = baseURL + ':' + port;
 
   //SEND LED COMMAND TO SERVER
   const sendVisualStimulus = async () => {
@@ -27,7 +31,7 @@ export default function LABconnect() {
         },
       };
 
-      await axios.post(`${baseURL}/command/2/VisualStimulus`, payload);
+      await axios.post(`${postURL}/command/2/VisualStimulus`, payload);
       console.log('Visual stimulus sent successfully. Brightness: ' + payload.brightness);
     } catch (error) {
       console.error('Error sending visual stimulus:', error);
@@ -43,7 +47,7 @@ export default function LABconnect() {
         duration: 10000
       };
 
-      await axios.post(`${baseURL}/command/3/Audio`, payload);
+      await axios.post(`${postURL}/command/3/Audio`, payload);
       console.log('Audio stimulus sent successfully. Volume: ' + payload.volume);
     } catch (error) {
       console.error('Error sending visual stimulus:', error);
@@ -67,10 +71,27 @@ export default function LABconnect() {
         >
           <Card disabled={true}>
             <Text>
-              Welcome to UI Kitten 😻
+              Enter your IP address:
             </Text>
+            <Text
+              appearance='hint'
+            >
+              Current IP address: {postURL}
+            </Text>
+            <Input
+              placeholder='IP Address'
+              onChangeText={value => setBaseURL('http://' + value)}
+              keyboardType="numeric"
+            />
+
+            <Input
+              placeholder='Port'
+              keyboardType="numeric"
+              onChangeText={nextValue => setPort(nextValue)}
+            />
+
             <Button onPress={() => setVisible(false)}>
-              DISMISS
+              Confirm
             </Button>
           </Card>
         </Modal>
