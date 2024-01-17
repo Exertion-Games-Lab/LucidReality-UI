@@ -1,129 +1,251 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Keyboard } from 'react-native';
+import React, { Component } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  Dimensions,
+  StatusBar,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
+import { Audio } from "expo-av";
+import { Picker } from "@react-native-picker/picker";
+import { Button } from "@ui-kitten/components";
 
-import { ApplicationProvider, Button, Text, Layout, Icon, IconElement, IconRegistry, Card, Input } from '@ui-kitten/components';
-import * as eva from '@eva-design/eva';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+const screen = Dimensions.get("window");
 
-const playIcon = (props: any): IconElement => (
-  <Icon
-    {...props}
-    name='play-circle-outline'
-  />
-);
+interface AppState {
+  remainingSeconds: number;
+  isRunning: boolean;
+  selectedHours: string;
+  selectedMinutes: string;
+}
 
-const pauseIcon = (props: any): IconElement => (
-  <Icon
-    {...props}
-    name='pause-circle-outline'
-  />
-);
 
-const resetIcon = (props: any): IconElement => (
-  <Icon
-    {...props}
-    name='refresh-outline'
-  />
-);
+const formatNumber = (number: number) => `0${number}`.slice(-2);
 
-const Timer = () => {
-  const [initialTime, setInitialTime] = useState(0);
-  const [remainingTime, setRemainingTime] = useState(initialTime);
-  const [isRunning, setIsRunning] = useState(false);
-
-  useEffect(() => {
-    if (isRunning) {
-      const interval = setInterval(() => {
-        setRemainingTime((prevRemainingTime) => {
-          if (prevRemainingTime === 0) {
-            setIsRunning(false);
-            clearInterval(interval);
-            return 0;
-          }
-          return prevRemainingTime - 1000;
-        });
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }
-  }, [isRunning]);
-
-  const handleStartStop = () => {
-    setIsRunning((prevIsRunning) => !prevIsRunning);
+const getRemaining = (time: number) => {
+  const hours = Math.floor(time / 3600);
+  const minutes = Math.floor((time % 3600) / 60);
+  const seconds = time % 60;
+  return {
+    hours: formatNumber(hours),
+    minutes: formatNumber(minutes),
+    seconds: formatNumber(seconds),
   };
-
-  const handleReset = () => {
-    setIsRunning(false);
-    setRemainingTime(initialTime);
-  };
-
-  const handleTimeChange = (text: string) => {
-    const newTime = parseInt(text, 10) * 60000;
-    setInitialTime(newTime);
-    setRemainingTime(newTime);
-  };
-
-  const formatTime = (milliseconds: any) => {
-    const totalSeconds = Math.floor(milliseconds / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-
-    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-  };
-
-  return (
-
-
-    <Layout style={styles.container} >
-      <Input style={styles.input}
-        placeholder="Enter time in minutes"
-        keyboardType="numeric"
-        onChangeText={handleTimeChange}
-      />
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <Layout>
-          <Text style={styles.time}>{formatTime(remainingTime)}</Text>
-        </Layout>
-      </TouchableWithoutFeedback>
-      <Layout style={styles.buttonContainer}>
-        <Button style={styles.button} onPress={handleStartStop} status='success'>
-          <Text style={styles.buttonText}>{isRunning ? 'Stop' : 'Start'}</Text>
-        </Button>
-        <Button style={styles.button} onPress={handleReset} status='danger'>
-          <Text style={styles.buttonText}>Reset</Text>
-        </Button>
-      </Layout>
-    </Layout>
-  );
 };
+
+const createArray = (length: number) => {
+  const arr = [];
+  let i = 0;
+  while (i < length) {
+    arr.push(i.toString());
+    i += 1;
+  }
+  return arr;
+};
+
+const AVAILABLE_HOURS = createArray(24);
+const AVAILABLE_MINUTES = createArray(60);
+
+export default class App extends Component<{}, AppState> {
+  state: AppState = {
+    remainingSeconds: 5,
+    isRunning: false,
+    selectedHours: "0",
+    selectedMinutes: "00",
+  };
+
+  interval: NodeJS.Timeout | null = null;
+  soundObject: Audio.Sound | null = null;
+
+  async componentDidMount() {
+    await Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: true,
+    });
+
+    this.soundObject = new Audio.Sound();
+    await this.soundObject.loadAsync(require("../assets/audio/alarm.mp3"));
+  }
+
+  componentDidUpdate(prevProp: {}, prevState: AppState) {
+    if (
+      this.state.remainingSeconds === 0 &&
+      prevState.remainingSeconds !== 0
+    ) {
+      this.stop();
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
+
+    if (this.soundObject) {
+      this.soundObject.unloadAsync();
+    }
+  }
+
+  start = () => {
+    this.setState((state) => ({
+      remainingSeconds:
+        parseInt(state.selectedHours, 10) * 3600 +
+        parseInt(state.selectedMinutes, 10) * 60,
+      isRunning: true,
+    }));
+    this.interval = setInterval(() => {
+      this.setState((state) => ({
+        remainingSeconds: state.remainingSeconds - 1,
+      }));
+    }, 1000);
+  };
+
+  stop = async () => {
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
+
+    this.setState({
+      remainingSeconds: 5,
+      isRunning: false,
+    });
+
+    if (this.soundObject) {
+      await this.soundObject.replayAsync();
+    }
+  };
+
+  stopSound = async () => {
+    if (this.soundObject) {
+      await this.soundObject.stopAsync();
+    }
+  };
+
+  renderPickers = () => (
+    <View style={styles.pickerContainer}>
+      <Picker
+        style={styles.picker}
+        itemStyle={styles.pickerItem}
+        selectedValue={this.state.selectedHours}
+        onValueChange={(itemValue) => {
+          this.setState({ selectedHours: itemValue });
+        }}
+        mode="dropdown"
+      >
+        {AVAILABLE_HOURS.map((value) => (
+          <Picker.Item key={value} label={value} value={value} />
+        ))}
+      </Picker>
+      <Text style={styles.pickerItem}>hours</Text>
+      <Picker
+        style={styles.picker}
+        itemStyle={styles.pickerItem}
+        selectedValue={this.state.selectedMinutes}
+        onValueChange={(itemValue) => {
+          this.setState({ selectedMinutes: itemValue });
+        }}
+        mode="dropdown"
+      >
+        {AVAILABLE_MINUTES.map((value) => (
+          <Picker.Item key={value} label={value} value={value} />
+        ))}
+      </Picker>
+      <Text style={styles.pickerItem}>minutes</Text>
+    </View>
+  );
+
+  render() {
+    const { hours, minutes, seconds } = getRemaining(
+      this.state.remainingSeconds
+    );
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" />
+        {this.state.isRunning ? (
+          <Text style={styles.timerText}>{`${hours}:${minutes}:${seconds}`}</Text>
+        ) : (
+          this.renderPickers()
+        )}
+        {this.state.isRunning ? (
+          <TouchableOpacity
+            onPress={this.stop}
+            style={[styles.button, styles.buttonStop]}
+          >
+            <Text style={[styles.buttonText, styles.buttonTextStop]}>Stop</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity onPress={this.start} style={styles.button}>
+            <Text style={styles.buttonText}>Start</Text>
+          </TouchableOpacity>
+          
+        )}
+        <Button style= {styles.Button} onPress={this.stopSound} >
+              <Text>Stop Alarm Sound</Text>
+        </Button>
+      </View>
+    );
+  }
+}
+
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    paddingHorizontal: '10%'
-  },
-  time: {
-    fontSize: 66,
-    margin: '10%',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-  },
-  buttonText: {
-    color: 'white',
+  Button:{
+    margin: 30
   },
   button: {
-    margin: '1%',
-    width: '40%',
-    paddingVertical: 'auto',
+    borderWidth: 10,
+    borderColor: "#89AAFF",
+    width: screen.width / 2,
+    height: screen.width / 2,
+    borderRadius: screen.width / 2,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 30,
+  },
+  buttonStop: {
+    borderColor: "#FF851B",
+  },
+  buttonText: {
+    fontSize: 45,
+    color: "#89AAFF",
+  },
+  buttonTextStop: {
+    color: "#FF851B",
+  },
+  timerText: {
+    color: "#fff",
+    fontSize: 90,
+  },
+  picker: {
+    flex: 1,
+    maxWidth: 100,
+    ...Platform.select({
+      android: {
+        color: "#fff",
+        backgroundColor: "rgba(92, 92, 92, 0.206)",
+      },
+    }),
+  },
+  pickerItem: {
+    color: "#fff",
+    fontSize: 20,
+    ...Platform.select({
+      android: {
+        marginLeft: 10,
+        marginRight: 10,
+      },
+    }),
+  },
+  pickerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });
-
-export default Timer;
