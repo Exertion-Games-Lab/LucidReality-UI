@@ -12,9 +12,9 @@ export default function Home() {
   return (
     <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
       <Layout style={styles.container}>
-        <Text category='h2'>Welcome to LucidReality</Text>
+        <Text category='h2'>Choose your sleep length</Text>
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-        <Link href="/overnight" asChild>
+        <Link href="/introToLD" asChild>
           <Button style={styles.button}>
             <Text>Overnight</Text>
           </Button>

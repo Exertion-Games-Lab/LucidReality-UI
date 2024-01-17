@@ -18,9 +18,24 @@ import {
     AccordionItemPanel,
 } from 'react-accessible-accordion';
 
+import { useEffect, useState } from 'react';
+import { Audio } from 'expo-av';
+
+import * as React from 'react';
+
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
 );
+
+const play = (props: any) => (
+    <Icon style={stylesScreen.icon} fill='white' name='volume-up' {...props} animation='pulse' />
+);
+
+const pause = (props: any) => (
+    <Icon style={stylesScreen.icon} fill='white' name='pause-circle' {...props} animation='pulse' />
+);
+
+const audioTrack = require('../../../assets/audio/introToSystem/intro.mp3');
 
 const blurhash =
     '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';
@@ -31,6 +46,57 @@ import imgLabUser from '../../../assets/images/DSC00187.png'
 import imgLabSetup from '../../../assets/images/DSC00211.png'
 
 export default function introToSystem() {
+    const [Loaded, SetLoaded] = React.useState(false);
+    const [Loading, SetLoading] = React.useState(false);
+    const [isPlaying, setIsPlaying] = React.useState(false); // Track playback status
+    const sound = React.useRef(new Audio.Sound());
+
+    //allows audio to play in silent
+    useEffect(() => {
+        Audio.setAudioModeAsync({
+            playsInSilentModeIOS: true,
+        });
+    }, []);
+
+    React.useEffect(() => {
+        LoadAudio();
+    }, []);
+
+    const handleTogglePlayback = async () => {
+        try {
+            const result = await sound.current.getStatusAsync();
+            if (result.isLoaded) {
+                if (isPlaying) {
+                    sound.current.pauseAsync();
+                } else {
+                    sound.current.playAsync();
+                }
+                setIsPlaying(!isPlaying); // Toggle playback status
+            }
+        } catch (error) { }
+    };
+
+    const LoadAudio = async () => {
+        SetLoading(true);
+        const checkLoading = await sound.current.getStatusAsync();
+        if (checkLoading.isLoaded === false) {
+            try {
+                const result = await sound.current.loadAsync(audioTrack, {}, true);
+                if (result.isLoaded === false) {
+                    SetLoading(false);
+                    console.log('Error in Loading Audio');
+                } else {
+                    SetLoading(false);
+                    SetLoaded(true);
+                }
+            } catch (error) {
+                console.log(error);
+                SetLoading(false);
+            }
+        } else {
+            SetLoading(false);
+        }
+    };
     return (
         <>
             <IconRegistry icons={EvaIconsPack} />
@@ -40,25 +106,29 @@ export default function introToSystem() {
                 <Layout style={styles.container}>
                     <ScrollView>
                         <Layout style={stylesScreen.titleContainer}>
-                            <Text category='h4'>Our system and approach</Text>
-                            <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+                            <Text category='h5'>Our system and approach</Text>
+                            <Button
+                                style={stylesScreen.button}
+                                appearance='outline'
+                                accessoryLeft={isPlaying ? pause : play}
+                                onPress={handleTogglePlayback}
+                            />
                         </Layout>
-
                         <Layout style={styles.container}>
-                        <Text style={stylesScreen.boldText} category='p1'>Our system consists of 3 major components</Text>
+                            <Text status='success' style={stylesScreen.boldText} category='p1'>Our system consists of 3 major components</Text>
                         </Layout>
 
                         <Card style={styles.card}>
                             <Text style={stylesScreen.boldText} category='h6'>Stimulus devices</Text>
                             <Text category='p1'>Stimulus devices include any devices that will directly aid in helping lucidity. For example, in the most basic setup, LEDs and Speakers are both devices that help a user reach lucidity. Other devices such as TACs, EMS, bubbler can all provide extra help to achive lucidity and modify content.</Text>
-                            <Text category='p1'>{'\n'}For now this app only supports LED and Audio but additional support is coming</Text>
+                            <Text category='p1'>{'\n'}For now this app only supports LED, Audio and TACs but additional support is coming</Text>
                         </Card>
- 
+
                         {
                             // Image of lab setup
                         }
                         <Layout style={styles.container}>
-                            <Image style={stylesScreen.image} placeholder= {blurhash} source={imgLabSetup} />
+                            <Image style={stylesScreen.image} placeholder={blurhash} source={imgLabSetup} />
                         </Layout>
 
                         <Card style={styles.card}>
@@ -89,19 +159,25 @@ export default function introToSystem() {
                         <Card style={styles.card}>
                             <Text style={stylesScreen.titleCard} category='h6'>Our Approach</Text>
                             <Text category='p1'>Our approach is based on the lucid dream technique 'Wake Back to Bed (WBTB)'. </Text>
-                            <Text category='p1' style={stylesScreen.boldText}> Step 1 - PLAY VR: </Text>
+                            <Text category='p1' style={stylesScreen.boldText}>Step 1 - PLAY VR: </Text>
                             <Text category='p1'>Spend up to half hour playing VR. This will aid in dreaming about your chosen VR topic.  </Text>
-                            <Text category='p1' style={stylesScreen.boldText}> Step 2 - SLEEP SESSION: </Text>
+                            <Text category='p1' style={stylesScreen.boldText}>Step 2 - SLEEP SESSION: </Text>
                             <Text category='p1'>Sleep as you normally would at night, recommended for minimum 4 hours. </Text>
-                            <Text category='p1' style={stylesScreen.boldText}> Step 3 -  STAY AWAKE: </Text>
+                            <Text category='p1' style={stylesScreen.boldText}>Step 3 -  STAY AWAKE: </Text>
                             <Text category='p1'>Spend half hour staying awake. This is a good time to consume further content related to what you may want to LD </Text>
-                            <Text category='p1' style={stylesScreen.boldText}> Step 4 - LUCID DREAM: </Text>
+                            <Text category='p1' style={stylesScreen.boldText}>Step 4 - LUCID DREAM: </Text>
                             <Text category='p1'>Go back to bed and enjoy your lucid dream </Text>
                         </Card>
 
                     </ScrollView>
                     <Link href="/playVR" asChild>
-                        <Button status='success' style={styles.buttonFixed} accessoryRight={arrow}>
+                        <Button onPress={() => {
+                            if (isPlaying) {
+                                handleTogglePlayback();
+                            } else {
+                                console.log("isPlaying is false");
+                            }
+                        }} status='success' style={styles.buttonFixed} accessoryRight={arrow}>
                             <Text>Play VR</Text>
                         </Button>
                     </Link>
@@ -116,6 +192,8 @@ const stylesScreen = StyleSheet.create({
         alignItems: 'center',
         padding: 7,
         marginTop: 20,
+        flexDirection: 'row',
+        justifyContent: 'center'
     },
     titleCard: {
         marginBottom: 10,
@@ -144,5 +222,21 @@ const stylesScreen = StyleSheet.create({
     boldText: {
         fontWeight: 'bold',
         paddingVertical: 5,
-      },
+    },
+    button: {
+        justifyContent: 'center',
+        borderWidth: 1,
+        alignItems: 'center',
+        width: 25,
+        height: 25,
+        borderRadius: 50,
+        borderColor: 'black',
+        backgroundColor: 'black',
+        marginLeft: 10
+    },
+    icon: {
+        width: 25,
+        height: 25,
+        size: 50
+    },
 });
