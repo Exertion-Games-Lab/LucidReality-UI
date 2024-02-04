@@ -11,6 +11,8 @@ import {
 import { Audio } from "expo-av";
 import { Picker } from "@react-native-picker/picker";
 import { Button } from "@ui-kitten/components";
+import { Animated } from "react-native";
+
 
 const screen = Dimensions.get("window");
 
@@ -19,6 +21,7 @@ interface AppState {
   isRunning: boolean;
   selectedHours: string;
   selectedMinutes: string;
+  timerEnded: boolean;
 }
 
 
@@ -54,10 +57,21 @@ export default class App extends Component<{}, AppState> {
     isRunning: false,
     selectedHours: "0",
     selectedMinutes: "00",
+    timerEnded: false,
   };
 
   interval: NodeJS.Timeout | null = null;
   soundObject: Audio.Sound | null = null;
+  shakeAnimation = new Animated.Value(0);
+
+  startShake = () => {
+    Animated.sequence([
+      Animated.timing(this.shakeAnimation, { toValue: 10, duration: 100, useNativeDriver: true }),
+      Animated.timing(this.shakeAnimation, { toValue: -10, duration: 100, useNativeDriver: true }),
+      Animated.timing(this.shakeAnimation, { toValue: 10, duration: 100, useNativeDriver: true }),
+      Animated.timing(this.shakeAnimation, { toValue: 0, duration: 100, useNativeDriver: true })
+    ]).start(() => this.startShake()); // Loop the animation
+  };
 
   async componentDidMount() {
     await Audio.setAudioModeAsync({
@@ -69,14 +83,29 @@ export default class App extends Component<{}, AppState> {
     await this.soundObject.loadAsync(require("../assets/audio/alarm.mp3"));
   }
 
-  componentDidUpdate(prevProp: {}, prevState: AppState) {
-    if (
-      this.state.remainingSeconds === 0 &&
-      prevState.remainingSeconds !== 0
-    ) {
-      this.stop();
+  componentDidUpdate(prevProps: {}, prevState: AppState) {
+    if (this.state.remainingSeconds === 0 && prevState.remainingSeconds !== 0) {
+      this.stopTimer(true); // Pass a flag indicating the timer ended naturally
     }
   }
+
+  stopTimer = (ended = false) => {
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
+
+    this.setState({
+      remainingSeconds: 5, 
+      isRunning: false,
+      timerEnded: ended, // Flag to set the timerEnded state
+    });
+
+    if (ended) {
+      this.playSound();
+      this.startShake();
+    }
+  };
 
   componentWillUnmount() {
     if (this.interval) {
@@ -102,19 +131,13 @@ export default class App extends Component<{}, AppState> {
     }, 1000);
   };
 
-  stop = async () => {
-    if (this.interval) {
-      clearInterval(this.interval);
-      this.interval = null;
-    }
+  stop = () => {
+    this.stopTimer(); // Just stop the timer without playing the sound.
+  };
 
-    this.setState({
-      remainingSeconds: 5,
-      isRunning: false,
-    });
-
+  playSound = async () => {
     if (this.soundObject) {
-      await this.soundObject.replayAsync();
+      await this.soundObject.replayAsync(); 
     }
   };
 
@@ -122,6 +145,8 @@ export default class App extends Component<{}, AppState> {
     if (this.soundObject) {
       await this.soundObject.stopAsync();
     }
+    // Reset timerEnded to false after stopping the sound to revert UI changes
+    this.setState({ timerEnded: false });
   };
 
   renderPickers = () => (
@@ -158,9 +183,7 @@ export default class App extends Component<{}, AppState> {
   );
 
   render() {
-    const { hours, minutes, seconds } = getRemaining(
-      this.state.remainingSeconds
-    );
+    const { hours, minutes, seconds } = getRemaining(this.state.remainingSeconds);
     return (
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
@@ -170,21 +193,24 @@ export default class App extends Component<{}, AppState> {
           this.renderPickers()
         )}
         {this.state.isRunning ? (
-          <TouchableOpacity
-            onPress={this.stop}
-            style={[styles.button, styles.buttonStop]}
-          >
-            <Text style={[styles.buttonText, styles.buttonTextStop]}>Stop</Text>
+          <TouchableOpacity onPress={() => this.stopTimer(false)} style={[styles.button, styles.buttonStop]}>
+            <Text style={[styles.buttonText, styles.buttonTextStop]}>Pause</Text>
           </TouchableOpacity>
+        ) : this.state.timerEnded ? ( // Check if the timer has ended
+          <Animated.View
+            style={{
+              transform: [{ translateX: this.shakeAnimation }]
+            }}
+          >
+            <TouchableOpacity onPress={this.stopSound} style={styles.button}>
+              <Text style={styles.buttonText}>Stop</Text>
+            </TouchableOpacity>
+          </Animated.View>
         ) : (
           <TouchableOpacity onPress={this.start} style={styles.button}>
             <Text style={styles.buttonText}>Start</Text>
           </TouchableOpacity>
-          
         )}
-        <Button style= {styles.Button} onPress={this.stopSound} >
-              <Text>Stop Alarm Sound</Text>
-        </Button>
       </View>
     );
   }
@@ -197,7 +223,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  Button:{
+  Button: {
     margin: 30
   },
   button: {

@@ -42,7 +42,7 @@ export default function LABconnect() {
   const sendAudioStimulus = async () => {
     try {
       const payload = {
-        filename: "ALPHA.mp3",
+        filename: "THETA.mp3",
         volume: sliderValueSound,
         duration: 10000
       };
