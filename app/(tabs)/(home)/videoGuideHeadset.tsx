@@ -13,33 +13,37 @@ import { default as theme } from "../../../theme.json";
 import Timer from '../../../components/Timer';
 
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
+import YoutubePlayer from 'react-native-youtube-iframe';
+
+import VideoCard from '../../../components/videoCard';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
 );
 
-export default function playVR() {
+export default function uninterruptedSleep() {
     return (
         <>
             <IconRegistry icons={EvaIconsPack} />
             <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
-                <Stack.Screen options={{ title: 'Play VR' }} />
-                
+                <Stack.Screen options={{ headerTitle: 'Headset Guide' }} />
                 <Layout style={stylesScreen.titleContainer}>
-                    <Text status='success' style={stylesScreen.boldText} category='p2'>Recommended to spend at least 30 minutes playing VR</Text>
+                    <Text status='success' style={stylesScreen.boldText} category='p2'>Now please put on the headband</Text>
                 </Layout>
-
                 <Layout style={styles.container}>
-                    <Timer defaultHours={0} defaultMinutes={30}/>
-
-                    <Link href="/videoGuideHeadset" asChild>
-                        <Button status='success' style={styles.buttonFixed} accessoryRight={arrow}>
-                            <Text>Next</Text>
-                        </Button>
-                    </Link>
+                    <VideoCard
+                        title="Headset Guide"
+                        excerpt="Please closely follow the electrode placements shown in the video"
+                    >
+                        <YoutubePlayer height={300} width={400} play={false} videoId={'xNE-NyaYBcg'} />
+                    </VideoCard>
                 </Layout>
-            </ApplicationProvider>
-
+                <Link href="/cognitiveTraining" asChild>
+                    <Button status='success' style={styles.buttonFixed} accessoryRight={arrow}>
+                        <Text>Next</Text>
+                    </Button>
+                </Link>
+            </ApplicationProvider >
         </>
     );
 }

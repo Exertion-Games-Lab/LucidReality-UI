@@ -29,7 +29,7 @@ export default function lucidDream() {
                 </Layout>
                 
                 <Layout style={styles.container}>
-                    <Timer />
+                    <Timer defaultHours={4} defaultMinutes={0}/>
                 
                 <Link href="/lucidDream" asChild>
                     <Button status='Danger' style={styles.button} accessoryRight={arrow}>

@@ -28,7 +28,7 @@ export default function stayAwake() {
                     <Text status='success' style={stylesScreen.boldText} category='p2'>Recommended to stay awake for 30 mins. This is a good time to consume more content you wish to dream about</Text>
                 </Layout>
                 <Layout style={styles.container}>
-                    <Timer />
+                    <Timer defaultHours={0} defaultMinutes={30}/>
                 </Layout>
                 <Link href="/lucidDream" asChild>
                     <Button status='success' style={styles.buttonFixed} accessoryRight={arrow}>

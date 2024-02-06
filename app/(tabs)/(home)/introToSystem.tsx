@@ -170,7 +170,7 @@ export default function introToSystem() {
                         </Card>
 
                     </ScrollView>
-                    <Link href="/playVR" asChild>
+                    <Link href="/uninterruptedSleep" asChild>
                         <Button onPress={() => {
                             if (isPlaying) {
                                 handleTogglePlayback();
@@ -178,7 +178,7 @@ export default function introToSystem() {
                                 console.log("isPlaying is false");
                             }
                         }} status='success' style={styles.buttonFixed} accessoryRight={arrow}>
-                            <Text>Play VR</Text>
+                            <Text>Next</Text>
                         </Button>
                     </Link>
                 </Layout>

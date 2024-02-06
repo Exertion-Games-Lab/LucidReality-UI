@@ -1,6 +1,7 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { AntDesign } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as eva from '@eva-design/eva';
 import { Link, Tabs } from 'expo-router';
 import { Pressable, useColorScheme } from 'react-native';
 
@@ -22,7 +23,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: 'orange',
+        tabBarActiveTintColor: '#254EDB',
         tabBarStyle: {
           backgroundColor: 'black',
         },
@@ -30,8 +31,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(home)"
         options={{
-          title: 'Get Started',
-          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="progress-check" color={color} size={24} />,
+          title: 'Sleep',
+          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="sleep" color={color} size={24} />,
           headerShown: false,
           headerRight: () => (
             <Link href="/modal" asChild>
@@ -55,6 +56,14 @@ export default function TabLayout() {
           title: 'Connect Now',
           headerShown: false,
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="connection" color={color} size={24} />,
+        }}
+      />
+      <Tabs.Screen
+        name="(journal)"
+        options={{
+          title: 'Journal',
+          headerShown: false,
+          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="book" color={color} size={24} />,
         }}
       />
     </Tabs>

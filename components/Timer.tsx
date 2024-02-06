@@ -16,6 +16,11 @@ import { Animated } from "react-native";
 
 const screen = Dimensions.get("window");
 
+interface AppProps {
+  defaultHours?: number; // Optional prop for default hours
+  defaultMinutes?: number; // Optional prop for default minutes
+}
+
 interface AppState {
   remainingSeconds: number;
   isRunning: boolean;
@@ -51,14 +56,19 @@ const createArray = (length: number) => {
 const AVAILABLE_HOURS = createArray(24);
 const AVAILABLE_MINUTES = createArray(60);
 
-export default class App extends Component<{}, AppState> {
-  state: AppState = {
-    remainingSeconds: 5,
-    isRunning: false,
-    selectedHours: "0",
-    selectedMinutes: "00",
-    timerEnded: false,
-  };
+export default class App extends Component<AppProps, AppState> {
+  constructor(props: AppProps) {
+    super(props);
+    const { defaultHours = 0, defaultMinutes = 0 } = this.props;
+    this.state = {
+      remainingSeconds: defaultHours * 3600 + defaultMinutes * 60,
+      isRunning: false,
+      selectedHours: defaultHours.toString(),
+      selectedMinutes: formatNumber(defaultMinutes),
+      timerEnded: false,
+    };
+  }
+
 
   interval: NodeJS.Timeout | null = null;
   soundObject: Audio.Sound | null = null;

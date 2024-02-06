@@ -23,8 +23,10 @@ export default function HomeLayout() {
       <Stack.Screen name= "overnight" options={{ title: 'Overnight' }} />
       <Stack.Screen name= "introToLD" options={{ title: '' }} />
       <Stack.Screen name= "introToSystem" options={{ title: '' }} />
-      <Stack.Screen name= "playVR" options={{ title: 'playVR' }} />
       <Stack.Screen name= "uninterruptedSleep" options={{ title: 'Uninterrupted Sleep' }} />
+      <Stack.Screen name= "videoGuideHeadset" options={{ title: 'Headset Guide' }} />
+      <Stack.Screen name= "cognitiveTraining" options={{ title: 'Cognitive Training' }} />
+      <Stack.Screen name= "playVR" options={{ title: 'playVR' }} />
       <Stack.Screen name= "stayAwake" options={{ title: 'Stay Awake' }} />
       <Stack.Screen name= "lucidDream" options={{ title: 'Lucid Dream' }} />
     </Stack>

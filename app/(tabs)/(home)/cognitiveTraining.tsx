@@ -16,30 +16,26 @@ import { EvaIconsPack } from '@ui-kitten/eva-icons';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
-);
+  );
 
-export default function playVR() {
+export default function uninterruptedSleep() {
     return (
         <>
             <IconRegistry icons={EvaIconsPack} />
             <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
-                <Stack.Screen options={{ title: 'Play VR' }} />
-                
+                <Stack.Screen options={{ headerTitle: 'Cognitive Training' }} />
                 <Layout style={stylesScreen.titleContainer}>
-                    <Text status='success' style={stylesScreen.boldText} category='p2'>Recommended to spend at least 30 minutes playing VR</Text>
+                    <Text status='success' style={stylesScreen.boldText} category='p2'>Cognitive Training</Text>
                 </Layout>
-
                 <Layout style={styles.container}>
-                    <Timer defaultHours={0} defaultMinutes={30}/>
-
-                    <Link href="/videoGuideHeadset" asChild>
-                        <Button status='success' style={styles.buttonFixed} accessoryRight={arrow}>
-                            <Text>Next</Text>
-                        </Button>
-                    </Link>
+                    <Timer defaultHours={0} defaultMinutes={10}/>
                 </Layout>
+                <Link href="/lucidDream" asChild>
+                    <Button status='success' style={styles.buttonFixed} accessoryRight={arrow}>
+                        <Text>Next</Text>
+                    </Button>
+                </Link>
             </ApplicationProvider>
-
         </>
     );
 }

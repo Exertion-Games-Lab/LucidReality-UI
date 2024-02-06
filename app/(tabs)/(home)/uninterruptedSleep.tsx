@@ -25,14 +25,14 @@ export default function uninterruptedSleep() {
             <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
                 <Stack.Screen options={{ headerTitle: 'Sleep Session' }} />
                 <Layout style={stylesScreen.titleContainer}>
-                    <Text status='success' style={stylesScreen.boldText} category='p2'>Recommended minimum 4 hours of deep sleep</Text>
+                    <Text status='success' style={stylesScreen.boldText} category='p2'>It's time to get some uninterrupted deep sleep first. {"\n"}We recommend at least 4 hours for the best results</Text>
                 </Layout>
                 <Layout style={styles.container}>
-                    <Timer />
+                    <Timer defaultHours={4} defaultMinutes={0}/>
                 </Layout>
-                <Link href="/stayAwake" asChild>
+                <Link href="/playVR" asChild>
                     <Button status='success' style={styles.buttonFixed} accessoryRight={arrow}>
-                        <Text>Skip</Text>
+                        <Text>Play VR</Text>
                     </Button>
                 </Link>
             </ApplicationProvider>
