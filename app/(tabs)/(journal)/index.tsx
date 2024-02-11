@@ -5,6 +5,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as eva from '@eva-design/eva';
 import { default as theme } from "../../../theme.json";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { Feather } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Dimensions } from 'react-native';
+import { Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
+
+
 
 interface DreamJournalEntry {
     id: string;
@@ -33,8 +40,19 @@ const DreamJournalScreen: React.FC = () => {
         locations: [],
     });
     const [selectedIndex, setSelectedIndex] = useState<IndexPath>(new IndexPath(0));
-    const [date, setDate] = useState(new Date());
-    const [time, setTime] = useState(new Date());
+
+    // Dynamically calculate modal width based on screen width
+    const screenWidth = Dimensions.get('window').width;
+    const modalWidth = screenWidth * 0.9; // 90% of the screen width
+
+    //Dynamic styling for modal width
+    const dynamicStyles = StyleSheet.create({
+        modalCard: {
+            width: modalWidth, // Use the dynamically calculated width
+            height: 530,
+            alignSelf: 'center', // Center the card
+        },
+    });
 
     useEffect(() => {
         loadDreamEntries();
@@ -42,26 +60,49 @@ const DreamJournalScreen: React.FC = () => {
 
     // Date change handler
     const onChangeDate = (_: any, selectedDate?: Date) => {
-        const currentDate = selectedDate || date;
-        setNewEntry({ ...newEntry, date: currentDate.toISOString() });
+        const currentDate = selectedDate ? selectedDate.toISOString() : newEntry.date; // Keep existing date if none selected
+        setNewEntry({ ...newEntry, date: currentDate });
     };
 
     // Time change handler
     const onChangeTime = (_: any, selectedTime?: Date) => {
-        const currentTime = selectedTime || time;
-        setNewEntry({ ...newEntry, sleepHours: currentTime.toISOString() });
+        const currentTime = selectedTime ? selectedTime.toISOString() : newEntry.sleepHours; // Keep existing time if none selected
+        setNewEntry({ ...newEntry, sleepHours: currentTime });
+    };
+
+    const formatDate = (isoString: string | number | Date) => {
+        const date = new Date(isoString);
+        return date.toLocaleDateString('en-GB', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        });
+    };
+
+    const formatTime = (isoString: string | number | Date) => {
+        const date = new Date(isoString);
+        return date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+        });
     };
 
     const loadDreamEntries = async () => {
         try {
             const keys = await AsyncStorage.getAllKeys();
             const result = await AsyncStorage.multiGet(keys);
-            const entries = result.map(([key, value]) => value ? JSON.parse(value) : null).filter(Boolean) as DreamJournalEntry[];
+            let entries = result.map(([key, value]) => value ? JSON.parse(value) : null).filter(Boolean) as DreamJournalEntry[];
+
+            // Sort entries by date from most recent to furthest away
+            entries = entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
             setDreamEntries(entries);
         } catch (e) {
             console.log(e);
         }
     };
+
 
     const saveDreamEntry = async (entry: DreamJournalEntry) => {
         try {
@@ -134,75 +175,101 @@ const DreamJournalScreen: React.FC = () => {
     const renderItem = ({ item }: { item: DreamJournalEntry }) => (
         <Card style={styles.card}>
             <Text category="h5">{item.title}</Text>
-            <Text category="s1">Date: {item.date}</Text>
-            <Text category="s1">Sleep Time: {item.sleepHours}</Text>
-            <Text category="p1">Description: {item.description}</Text>
+            <Text category="s1">Date: {formatDate(item.date)}</Text>
+            <Text category="s1">Sleep Time: {formatTime(item.sleepHours)}</Text>
+            <Text category="s1">Description: {item.description}</Text>
             <Text category="s1">Category: {item.category}</Text>
             {/* Display characters and locations if needed */}
             <View style={styles.buttonContainer}>
-                <Button size="tiny" onPress={() => handleEditEntry(item)}>Edit</Button>
-                <Button size="tiny" status="danger" onPress={() => handleDeleteEntry(item.id)}>Delete</Button>
+                <Button accessoryLeft={edit} size="tiny" onPress={() => handleEditEntry(item)}>Edit</Button>
+                <Button accessoryLeft={bin} size="tiny" status="danger" onPress={() => handleDeleteEntry(item.id)}>Delete</Button>
             </View>
         </Card>
     );
 
+    const plus = (props: any) => (
+        <Feather name="plus" size={18} color="white" />
+    );
+
+    const edit = (props: any) => (
+        <Feather name="edit" size={13} color="white" />
+    );
+
+    const bin = (props: any) => (
+        <MaterialIcons name="delete" size={13} color="white" />
+    );
+
+
     return (
         <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
             <Layout style={styles.container}>
-                <Button onPress={() => { setModalVisible(true); resetForm(); }}>Add Dream Entry</Button>
+                <Button accessoryLeft={plus} onPress={() => { setModalVisible(true); resetForm(); }}>Add Dream Entry</Button>
                 <FlatList
                     data={dreamEntries}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id}
                 />
                 <Modal
+
                     visible={modalVisible}
                     backdropStyle={styles.backdrop}
                     onBackdropPress={() => { setModalVisible(false); resetForm(); }}
                 >
-                    <Card disabled={true}>
-                        <Input
-                            placeholder="Title"
-                            value={newEntry.title}
-                            onChangeText={(text) => setNewEntry({ ...newEntry, title: text })}
-                        />
-                        <DateTimePicker
-                            testID="dateTimePicker"
-                            value={date}
-                            mode="date"
-                            display="default"
-                            onChange={onChangeDate}
-                        />
-                        <DateTimePicker
-                            testID="dateTimePicker"
-                            value={time}
-                            mode="time"
-                            is24Hour={true} 
-                            display="default"
-                            onChange={onChangeTime}
-                        />
-                        <Input
-                            placeholder="Description"
-                            value={newEntry.description}
-                            onChangeText={(text) => setNewEntry({ ...newEntry, description: text })}
-                            textStyle={{ minHeight: 100 }} 
-                            multiline={true}
-                        />
-                        <Select
-                            selectedIndex={selectedIndex}
-                            onSelect={(index) => setSelectedIndex(index as IndexPath)}
-                            value={newEntry.category}
-                        >
-                            <SelectItem title='Normal' />
-                            <SelectItem title='Lucid' />
-                            <SelectItem title='Nightmare' />
-                            <SelectItem title='Recurring' />
-                        </Select>
+                    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+                        <Card disabled={true} style={dynamicStyles.modalCard}>
+                            <ScrollView>
+                                <Input
+                                    label="Title"
+                                    style={styles.spacing}
+                                    value={newEntry.title}
+                                    onChangeText={(text) => setNewEntry({ ...newEntry, title: text })}
+                                />
+                                <Text category='label' style={styles.label}>Time</Text>
+                                <DateTimePicker
+                                    testID="dateTimePicker-date"
+                                    value={new Date(newEntry.date || new Date().toISOString())} // Fallback to current date if newEntry.date is empty
+                                    mode="date"
+                                    display="default"
+                                    onChange={onChangeDate}
+                                    style={styles.picker}
+                                />
+                                <Text category='label' style={styles.label}>Date</Text>
+                                <DateTimePicker
+                                    testID="dateTimePicker-time"
+                                    value={newEntry.sleepHours ? new Date(newEntry.sleepHours) : new Date()} // Use today's date with the stored time or fallback to current time
+                                    mode="time"
+                                    is24Hour={true}
+                                    display="default"
+                                    onChange={onChangeTime}
+                                    style={styles.picker}
+                                />
 
-                        <Button onPress={handleAddEditEntry}>
-                            {isEditMode ? 'Update Entry' : 'Save Entry'}
-                        </Button>
-                    </Card>
+                                <Select
+                                    selectedIndex={selectedIndex}
+                                    onSelect={(index) => setSelectedIndex(index as IndexPath)}
+                                    value={newEntry.category}
+                                    style={styles.spacing}
+                                    label="Category"
+                                >
+                                    <SelectItem title='Normal' />
+                                    <SelectItem title='Lucid' />
+                                    <SelectItem title='Nightmare' />
+                                    <SelectItem title='Recurring' />
+                                </Select>
+                                <Input
+                                    label="Description"
+                                    value={newEntry.description}
+                                    onChangeText={(text) => setNewEntry({ ...newEntry, description: text })}
+                                    textStyle={{ minHeight: 130 }}
+                                    multiline={true}
+                                    style={styles.spacing}
+                                />
+                            </ScrollView>
+                            <Button onPress={handleAddEditEntry}>
+                                {isEditMode ? 'Update Entry' : 'Save Entry'}
+                            </Button>
+                        </Card>
+                    </TouchableWithoutFeedback>
                 </Modal>
             </Layout>
         </ApplicationProvider>
@@ -225,6 +292,21 @@ const styles = StyleSheet.create({
     backdrop: {
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
+    spacing: {
+        marginBottom: 15, // Space between form elements
+    },
+    centerContent: {
+        alignItems: 'center', // Center content horizontally
+    },
+    label: {
+        textAlign: 'left',
+        color: '#8894ac'
+    },
+    picker: {
+        marginBottom: 15,
+        alignItems: 'flex-start',
+        color: 'black',
+    }
 });
 
 export default DreamJournalScreen;

@@ -8,7 +8,6 @@ import { useColorScheme } from 'react-native';
 export default function ConnectionLayout() {
   return (
     <Stack
-      // https://reactnavigation.org/docs/headers#sharing-common-options-across-screens
       screenOptions={{
         headerStyle: {
           backgroundColor: 'black',
@@ -21,6 +20,7 @@ export default function ConnectionLayout() {
       {/* Optionally configure static options outside the route. */}
       <Stack.Screen name="index" options={{title: 'Connect now'}} />
       <Stack.Screen name="LABconnect" options={{ title: 'Lab' }} />
+      <Stack.Screen name="PORTABLEconnect" options={{ title: 'Portable' }} />
     </Stack>
   );
 }
