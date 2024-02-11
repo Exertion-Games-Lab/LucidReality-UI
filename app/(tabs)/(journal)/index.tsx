@@ -174,14 +174,23 @@ const DreamJournalScreen: React.FC = () => {
 
     const renderItem = ({ item }: { item: DreamJournalEntry }) => (
         <Card style={styles.card}>
-            <Text category="h5">{item.title}</Text>
-            <Text category="s1">Date: {formatDate(item.date)}</Text>
-            <Text category="s1">Sleep Time: {formatTime(item.sleepHours)}</Text>
-            <Text category="s1">Description: {item.description}</Text>
-            <Text category="s1">Category: {item.category}</Text>
+            <Text category="h5" style={styles.renderSpacing}>{item.title}</Text>
+
+            <Text category="label" style={styles.label}>Date:</Text>
+            <Text category="s1" style={styles.renderSpacing}>{formatDate(item.date)}</Text>
+
+            <Text category="label" style={styles.label}>Wake Up Time:</Text>
+            <Text category="s1" style={styles.renderSpacing}>{formatTime(item.sleepHours)}</Text>
+
+            <Text category="label" style={styles.label}>Description:</Text>
+            <Text category="s1" style={styles.renderSpacing}>{item.description}</Text>
+
+
+            <Text category="label" style={styles.label}>Category:</Text>
+            <Text category="s1">{item.category}</Text>
             {/* Display characters and locations if needed */}
             <View style={styles.buttonContainer}>
-                <Button accessoryLeft={edit} size="tiny" onPress={() => handleEditEntry(item)}>Edit</Button>
+                <Button accessoryLeft={edit} size="tiny" onPress={() => handleEditEntry(item)}>   Edit  </Button>
                 <Button accessoryLeft={bin} size="tiny" status="danger" onPress={() => handleDeleteEntry(item.id)}>Delete</Button>
             </View>
         </Card>
@@ -224,7 +233,7 @@ const DreamJournalScreen: React.FC = () => {
                                     value={newEntry.title}
                                     onChangeText={(text) => setNewEntry({ ...newEntry, title: text })}
                                 />
-                                <Text category='label' style={styles.label}>Time</Text>
+                                <Text category='label' style={styles.label}>Date</Text>
                                 <DateTimePicker
                                     testID="dateTimePicker-date"
                                     value={new Date(newEntry.date || new Date().toISOString())} // Fallback to current date if newEntry.date is empty
@@ -233,7 +242,7 @@ const DreamJournalScreen: React.FC = () => {
                                     onChange={onChangeDate}
                                     style={styles.picker}
                                 />
-                                <Text category='label' style={styles.label}>Date</Text>
+                                <Text category='label' style={styles.label}>Wake Up Time</Text>
                                 <DateTimePicker
                                     testID="dateTimePicker-time"
                                     value={newEntry.sleepHours ? new Date(newEntry.sleepHours) : new Date()} // Use today's date with the stored time or fallback to current time
@@ -294,6 +303,9 @@ const styles = StyleSheet.create({
     },
     spacing: {
         marginBottom: 15, // Space between form elements
+    },
+    renderSpacing: {
+        marginBottom: 10, // Space between form elements
     },
     centerContent: {
         alignItems: 'center', // Center content horizontally
