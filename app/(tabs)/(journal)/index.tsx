@@ -10,6 +10,10 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Dimensions } from 'react-native';
 import { Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+import { Audio } from 'expo-av';
+import Slider from '@react-native-community/slider';
+import { AVPlaybackStatus } from 'expo-av';
+import { Ionicons } from '@expo/vector-icons';
 
 
 
@@ -22,6 +26,7 @@ interface DreamJournalEntry {
     category: 'Normal' | 'Lucid' | 'Nightmare' | 'Recurring';
     characters: string[];
     locations: string[];
+    recordingUri?: string | null;
 }
 
 const DreamJournalScreen: React.FC = () => {
@@ -41,22 +46,98 @@ const DreamJournalScreen: React.FC = () => {
     });
     const [selectedIndex, setSelectedIndex] = useState<IndexPath>(new IndexPath(0));
 
-    // Dynamically calculate modal width based on screen width
-    const screenWidth = Dimensions.get('window').width;
-    const modalWidth = screenWidth * 0.9; // 90% of the screen width
+    //Recording
+    const [recording, setRecording] = useState<Audio.Recording | null>(null);
+    const [isRecording, setIsRecording] = useState(false);
+    const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
+    const [sound, setSound] = useState<Audio.Sound | null>(null);
 
-    //Dynamic styling for modal width
-    const dynamicStyles = StyleSheet.create({
-        modalCard: {
-            width: modalWidth, // Use the dynamically calculated width
-            height: 530,
-            alignSelf: 'center', // Center the card
-        },
-    });
 
     useEffect(() => {
         loadDreamEntries();
     }, []);
+
+    // Start recording
+    const startRecording = async () => {
+        try {
+            await Audio.requestPermissionsAsync();
+            await Audio.setAudioModeAsync({
+                allowsRecordingIOS: true,
+                playsInSilentModeIOS: true,
+            });
+            const { recording } = await Audio.Recording.createAsync(
+                Audio.RecordingOptionsPresets.HIGH_QUALITY
+            );
+            setRecording(recording);
+            setIsRecording(true);
+        } catch (err) {
+            console.error('Failed to start recording', err);
+            setIsRecording(false)
+        }
+    };
+
+    // Stop recording
+    const stopRecording = async () => {
+        if (!recording) {
+            return;
+        }
+        setRecording(null);
+        await recording.stopAndUnloadAsync();
+        const uri = recording.getURI();
+        setNewEntry({ ...newEntry, recordingUri: uri });
+        setIsRecording(false)
+    };
+
+    // Function to play the recording
+    const playRecording = async (uri: string) => {
+        const { sound } = await Audio.Sound.createAsync(
+            { uri: uri },
+            { shouldPlay: true }
+        );
+
+        // Play the sound
+        await sound.playAsync();
+    };
+
+    const startPlayback = async (uri: string, entryId: string) => {
+        // First, stop any currently playing sound
+        if (sound) {
+            await sound.unloadAsync();
+            setSound(null);
+        }
+
+        // Only start playback if the uri is valid and not currently playing
+        if (uri && currentlyPlaying !== entryId) {
+            const { sound: playbackSound } = await Audio.Sound.createAsync(
+                { uri },
+                { shouldPlay: true },
+            );
+            setSound(playbackSound);
+            setCurrentlyPlaying(entryId);
+
+            // When the audio finishes, reset the currently playing state
+            playbackSound.setOnPlaybackStatusUpdate((status) => {
+                if (!status.isLoaded) {
+                } else {
+                    // This will be true when the audio has finished playing
+                    if (status.didJustFinish) {
+                        setCurrentlyPlaying(null);
+                    }
+                }
+            });
+            await playbackSound.playAsync();
+        }
+    };
+
+    const stopPlayback = async () => {
+        if (sound) {
+            await sound.stopAsync();
+            await sound.unloadAsync();
+            setSound(null);
+            setCurrentlyPlaying(null);
+        }
+    };
+
 
     // Date change handler
     const onChangeDate = (_: any, selectedDate?: Date) => {
@@ -189,6 +270,26 @@ const DreamJournalScreen: React.FC = () => {
             <Text category="label" style={styles.label}>Category:</Text>
             <Text category="s1">{item.category}</Text>
             {/* Display characters and locations if needed */}
+
+            {item.recordingUri ? (
+                currentlyPlaying === item.id ? (
+                    <Button
+                        appearance='ghost'
+                        size='giant'
+                        onPress={stopPlayback}
+                    >
+                        {evaProps => <><StopIcon /><Text style={{ marginLeft: 8 }} category='label'>Stop Recording</Text></>}
+                    </Button>
+                ) : (
+                    <Button
+                        appearance='ghost'
+                        size='giant'
+                        onPress={() => item.recordingUri && startPlayback(item.recordingUri, item.id)}
+                    >
+                        {evaProps => <><PlayIcon /><Text style={{ marginLeft: 8 }} category='label' >Play Recording</Text></>}
+                    </Button>
+                )
+            ) : null}
             <View style={styles.buttonContainer}>
                 <Button accessoryLeft={edit} size="tiny" onPress={() => handleEditEntry(item)}>   Edit  </Button>
                 <Button accessoryLeft={bin} size="tiny" status="danger" onPress={() => handleDeleteEntry(item.id)}>Delete</Button>
@@ -206,6 +307,39 @@ const DreamJournalScreen: React.FC = () => {
 
     const bin = (props: any) => (
         <MaterialIcons name="delete" size={13} color="white" />
+    );
+
+    const PlayIcon = (props: any) => (
+        <Ionicons name="play-circle-outline" size={30} color="green" {...props} />
+    );
+
+    const StopIcon = (props: any) => (
+        <Ionicons name="stop-circle-outline" size={30} color="red" {...props} />
+    );
+
+
+    // Button to start recording
+    const RecordButton = () => (
+        <Button
+            appearance='ghost'
+            status='danger'
+            accessoryLeft={() => <Ionicons name="mic-circle" size={32} color="red" />}
+            onPress={startRecording}
+        >
+            {() => <Text style={styles.buttonText} category='label'>Start Recording</Text>}
+        </Button>
+    );
+
+    // Button to stop recording
+    const StopButton = () => (
+        <Button
+            appearance='ghost'
+            status='danger'
+            accessoryLeft={() => <Ionicons name="stop-circle" size={32} color="red" />}
+            onPress={stopRecording}
+        >
+            {() => <Text style={styles.buttonText} category='label'>Stop Recording</Text>}
+        </Button>
     );
 
 
@@ -273,10 +407,12 @@ const DreamJournalScreen: React.FC = () => {
                                     multiline={true}
                                     style={styles.spacing}
                                 />
+                                {isRecording ? <StopButton /> : <RecordButton />}
+
+                                <Button onPress={handleAddEditEntry}>
+                                    {isEditMode ? 'Update Entry' : 'Save Entry'}
+                                </Button>
                             </ScrollView>
-                            <Button onPress={handleAddEditEntry}>
-                                {isEditMode ? 'Update Entry' : 'Save Entry'}
-                            </Button>
                         </Card>
                     </TouchableWithoutFeedback>
                 </Modal>
@@ -285,6 +421,20 @@ const DreamJournalScreen: React.FC = () => {
     );
 };
 
+
+// Dynamically calculate modal width based on screen width
+const screenWidth = Dimensions.get('window').width;
+const modalWidth = screenWidth * 0.9; // 90% of the screen width
+
+//Dynamic styling for modal width
+const dynamicStyles = StyleSheet.create({
+    modalCard: {
+        width: modalWidth, // Use the dynamically calculated width
+        height: 590,
+        alignSelf: 'center', // Center the card
+    },
+});
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -292,6 +442,7 @@ const styles = StyleSheet.create({
     },
     card: {
         marginVertical: 4,
+        padding: 8
     },
     buttonContainer: {
         flexDirection: 'row',
@@ -318,7 +469,11 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         alignItems: 'flex-start',
         color: 'black',
-    }
+    },
+    buttonText: {
+        marginLeft: 8,
+        color: 'red',
+    },
 });
 
 export default DreamJournalScreen;

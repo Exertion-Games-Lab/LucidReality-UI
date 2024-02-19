@@ -141,7 +141,7 @@ export default function introToSystem() {
                             // Image of sleep tracker setup
                         }
                         <Layout style={styles.container}>
-                            <Image style={stylesScreen.image} source={imgSleepTracker} />
+                            <Image style={stylesScreen.image} placeholder={blurhash} source={imgSleepTracker} />
                         </Layout>
 
                         <Card style={styles.card}>
