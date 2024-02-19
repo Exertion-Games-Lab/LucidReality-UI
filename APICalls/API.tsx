@@ -1,42 +1,64 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface APIVariables {
-  postURL: string;
-  ledValue: number;
-  soundValue: number;
+    baseURL: string;
+    port: number;
+    ledValue: number;
+    soundValue: number;
+    deviceType: string; // "portable" or "lab"
+    ledCommandNo: number; // 1 for LAB, 2 for portable
+    audioCommandNo: number; // 2 for LAB, 3 for portable
+    gvsCommandNo: number; // 4 for LAB, 5 for portable
 }
 
 interface APIContextType {
-  apiVariables: APIVariables;
-  setAPIVariables: (newVars: Partial<APIVariables>) => void;
+    apiVariables: APIVariables;
+    setAPIVariables: (newVars: Partial<APIVariables>) => void;
 }
 
 const defaultValues: APIVariables = {
-  postURL: 'http://192.168.1.7:8080',
-  ledValue: 10,
-  soundValue: 10,
+    baseURL: 'http://192.168.1.7',
+    port: 8080,
+    ledValue: 20,
+    soundValue: 20,
+    deviceType: 'lab',
+    ledCommandNo: 1,
+    audioCommandNo: 2,
+    gvsCommandNo: 4,
 };
 
 const APIContext = createContext<APIContextType | undefined>(undefined);
 
 export const APIProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [apiVariables, setAPIVariablesState] = useState<APIVariables>(defaultValues);
+    const [apiVariables, setAPIVariablesState] = useState<APIVariables>(defaultValues);
 
-  const setAPIVariables = (newVars: Partial<APIVariables>) => {
-    setAPIVariablesState((currentVars) => ({ ...currentVars, ...newVars }));
-  };
+    const setAPIVariables = (newVars: Partial<APIVariables>) => {
+        // Check if deviceType is being updated and adjust command numbers accordingly
+        let updatedVars = { ...newVars };
+        if (newVars.deviceType !== undefined) {
+            const isLab = newVars.deviceType === 'lab';
+            updatedVars = {
+                ...updatedVars,
+                ledCommandNo: isLab ? 1 : 2,
+                audioCommandNo: isLab ? 2 : 3,
+                gvsCommandNo: isLab ? 4 : 5,
+            };
+        }
 
-  return (
-    <APIContext.Provider value={{ apiVariables, setAPIVariables }}>
-      {children}
-    </APIContext.Provider>
-  );
+        setAPIVariablesState((currentVars) => ({ ...currentVars, ...updatedVars }));
+    };
+
+    return (
+        <APIContext.Provider value={{ apiVariables, setAPIVariables }}>
+            {children}
+        </APIContext.Provider>
+    );
 };
 
 export const useAPIVariables = () => {
-  const context = useContext(APIContext);
-  if (!context) {
-    throw new Error('useAPIVariables must be used within a APIProvider');
-  }
-  return context;
+    const context = useContext(APIContext);
+    if (!context) {
+        throw new Error('useAPIVariables must be used within a APIProvider');
+    }
+    return context;
 };

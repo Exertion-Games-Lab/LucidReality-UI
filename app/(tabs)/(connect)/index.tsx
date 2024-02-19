@@ -12,11 +12,11 @@ export default function Home() {
   return (
     <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
       <Layout style={styles.container}>
-        <Text category='h2'>Choose your device type</Text>
+        <Text category='h2'>Get Started</Text>
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-        <Link href="/LABconnect" asChild>
+        <Link href="/Connect" asChild>
           <Button style={styles.button}>
-            <Text>Lab</Text>
+            <Text>Connect & Calibrate</Text>
           </Button>
         </Link>
 

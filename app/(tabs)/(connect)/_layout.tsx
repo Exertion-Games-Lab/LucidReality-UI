@@ -18,9 +18,8 @@ export default function ConnectionLayout() {
         },
       }}>
       {/* Optionally configure static options outside the route. */}
-      <Stack.Screen name="index" options={{title: 'Connect now'}} />
-      <Stack.Screen name="LABconnect" options={{ title: 'Lab' }} />
-      <Stack.Screen name="PORTABLEconnect" options={{ title: 'Portable' }} />
+      <Stack.Screen name="index" options={{title: 'Get Started'}} />
+      <Stack.Screen name="Connect" options={{ title: '' }} />
     </Stack>
   );
 }

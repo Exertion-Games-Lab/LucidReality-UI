@@ -53,7 +53,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(connect)"
         options={{
-          title: 'Connect Now',
+          title: 'Get Started',
           headerShown: false,
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="connection" color={color} size={24} />,
         }}
