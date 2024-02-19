@@ -106,7 +106,7 @@ export default function introToSystem() {
                 <Layout style={styles.container}>
                     <ScrollView>
                         <Layout style={stylesScreen.titleContainer}>
-                            <Text category='h5'>Our system and approach</Text>
+                            <Text category='h5'>The system and our approach</Text>
                             <Button
                                 style={stylesScreen.button}
                                 appearance='outline'
@@ -114,8 +114,18 @@ export default function introToSystem() {
                                 onPress={handleTogglePlayback}
                             />
                         </Layout>
+                        <Card style={styles.card}>
+                            <Text style={stylesScreen.titleCard} category='h6'>Our Approach</Text>
+                            <Text category='p1'>Our approach is based on the lucid dream technique 'Wake Back to Bed (WBTB)'. </Text>
+                            <Text category='p1' style={stylesScreen.boldText}>Step 1 - SLEEP SESSION: </Text>
+                            <Text category='p1'>Sleep as you normally would at night, recommended for minimum 4 hours. </Text>
+                            <Text category='p1' style={stylesScreen.boldText}>Step 2 - PLAY VR & STAY AWAKE: </Text>
+                            <Text category='p1'>Spend up to half hour playing VR. This will aid in dreaming about your chosen VR topic.  </Text>
+                            <Text category='p1' style={stylesScreen.boldText}>Step 3 - LUCID DREAM: </Text>
+                            <Text category='p1'>Go back to bed and enjoy your lucid dream </Text>
+                        </Card>
                         <Layout style={styles.container}>
-                            <Text status='success' style={stylesScreen.boldText} category='p1'>Our system consists of 3 major components</Text>
+                            <Text status='primary' category='s1'>Our system consists of 3 major components:</Text>
                         </Layout>
 
                         <Card style={styles.card}>
@@ -156,18 +166,6 @@ export default function introToSystem() {
                         <Layout style={styles.container}>
                             <Image style={stylesScreen.image} source={imgLabUser} />
                         </Layout>
-                        <Card style={styles.card}>
-                            <Text style={stylesScreen.titleCard} category='h6'>Our Approach</Text>
-                            <Text category='p1'>Our approach is based on the lucid dream technique 'Wake Back to Bed (WBTB)'. </Text>
-                            <Text category='p1' style={stylesScreen.boldText}>Step 1 - PLAY VR: </Text>
-                            <Text category='p1'>Spend up to half hour playing VR. This will aid in dreaming about your chosen VR topic.  </Text>
-                            <Text category='p1' style={stylesScreen.boldText}>Step 2 - SLEEP SESSION: </Text>
-                            <Text category='p1'>Sleep as you normally would at night, recommended for minimum 4 hours. </Text>
-                            <Text category='p1' style={stylesScreen.boldText}>Step 3 -  STAY AWAKE: </Text>
-                            <Text category='p1'>Spend half hour staying awake. This is a good time to consume further content related to what you may want to LD </Text>
-                            <Text category='p1' style={stylesScreen.boldText}>Step 4 - LUCID DREAM: </Text>
-                            <Text category='p1'>Go back to bed and enjoy your lucid dream </Text>
-                        </Card>
 
                     </ScrollView>
                     <Link href="/uninterruptedSleep" asChild>

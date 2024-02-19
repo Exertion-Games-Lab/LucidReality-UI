@@ -14,19 +14,23 @@ import Timer from '../../../components/Timer';
 
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import { AntDesign } from '@expo/vector-icons';
+import { useAPIVariables } from '../../../APICalls/API';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
 );
 
 export default function lucidDream() {
+    const { apiVariables, setAPIVariables } = useAPIVariables();
     const [remState, setRemState] = useState('Checking connection...');
     const [connectionStatus, setConnectionStatus] = useState('Checking connection...');
     const [isLoading, setIsLoading] = useState(true);
 
+    const postURL = apiVariables.baseURL + ':' + apiVariables.port
+
     useEffect(() => {
         const interval = setInterval(() => {
-            fetch('http://127.0.0.1:5000/get_rem')
+            fetch(`http://127.0.0.1:5000/get_rem`) //always runs on this IP and port by default regardless of device
                 .then((response) => {
                     if (response.ok) {
                         setConnectionStatus('Connected');

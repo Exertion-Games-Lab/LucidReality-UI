@@ -20,7 +20,6 @@ function ConnectInner() {
   const [isVisualStimulusLoading, setIsVisualStimulusLoading] = useState(false);
   const [isAudioStimulusLoading, setIsAudioStimulusLoading] = useState(false);
 
-
   //Where we post to server after getting the base IP and port
   const postURL = baseURL + ':' + port;
 

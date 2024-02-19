@@ -1,36 +1,33 @@
 import { Link, Stack } from 'expo-router';
 import { Pressable, SafeAreaView, StyleSheet, ScrollView, Platform } from 'react-native';
-
-import { useRef } from 'react';
-
-import { View } from '../../../components/Themed';
-
+import ReactPlayer from 'react-player'
 import styles from "../../../constants/Style";
-
 import { ApplicationProvider, Button, Text, Layout, Icon, IconElement, IconRegistry, Card } from '@ui-kitten/components';
 import * as eva from '@eva-design/eva';
 import { default as theme } from "../../../theme.json";
 import Timer from '../../../components/Timer';
-
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import YoutubePlayer from 'react-native-youtube-iframe';
-
 import VideoCard from '../../../components/videoCard';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
 );
 
-export default function videoGuideHeadset() {
+export default function userGuideHeadset() {
     return (
         <>
             <IconRegistry icons={EvaIconsPack} />
             <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
                 <Stack.Screen options={{ headerTitle: 'Headset Guide' }} />
-
-                <Layout style={stylesScreen.titleContainer}>
-
-                    <Text status='success' style={stylesScreen.boldText} category='p2'>Now please put on the headband</Text>
+                <ScrollView>
+                <Layout>
+                    <Card style={styles.card}>
+                        <Text category='h2'>Headset Guide</Text>
+                        <Text category='s1' status='danger'>Please note:</Text>
+                        <Text category='s1' style={stylesScreen.spacing} status='danger'>This screen will reappear as you progress through a sleep session, do not start the detection script now!</Text>
+                        <Text category='s1' style={stylesScreen.spacing}>Only start the detector.py Script when this screen is promted in your Sleep Session. This will be right before your lucid dream</Text>
+                    </Card>
                 </Layout>
                 <Layout style={styles.container}>
                     <VideoCard
@@ -39,26 +36,20 @@ export default function videoGuideHeadset() {
                     >
                         <YoutubePlayer height={300} width={400} play={false} videoId={'DRGktMG2MhI'} />
                     </VideoCard>
-                    <ScrollView>
-                        <Card style={styles.card}>
-                            <Text category='label'>Step 2</Text>
-                            <Text category='s1' style={stylesScreen.spacing}>Navigate to LucidReality-Devices/detector folder in your terminal</Text>
-
-                            <Text category='label'>Step 3</Text>
-                            <Text category='s1' style={stylesScreen.spacing}>In the terminal type 'python Detector.py' and press enter</Text>
-
-                            <Text category='label'>Step 4</Text>
-                            <Text category='s1' style={stylesScreen.spacing}>The script is running successfully if you see the terminal print a ip address and output the REM state to console every second</Text>
-                        </Card>
-
-                    </ScrollView>
                 </Layout>
+                <Layout>
+                <Card style={styles.card}>
+                    <Text category='label'>Step 2</Text>
+                    <Text category='s1' style={stylesScreen.spacing}>Navigate to LucidReality-Devices/detector folder in your terminal</Text>
 
-                <Link href="/cognitiveTraining" asChild>
-                    <Button status='success' style={styles.buttonFixed} accessoryRight={arrow}>
-                        <Text>Next</Text>
-                    </Button>
-                </Link>
+                    <Text category='label'>Step 3</Text>
+                    <Text category='s1' style={stylesScreen.spacing}>In the terminal type 'python Detector.py' and press enter</Text>
+
+                    <Text category='label'>Step 4</Text>
+                    <Text category='s1' style={stylesScreen.spacing}>The script is running successfully if you see the terminal print a ip address and output the REM state to console every second</Text>
+                </Card>
+                </Layout>
+                </ScrollView>
             </ApplicationProvider >
         </>
     );

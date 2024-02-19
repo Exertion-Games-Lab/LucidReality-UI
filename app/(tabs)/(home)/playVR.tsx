@@ -18,15 +18,17 @@ export default function playVR() {
         <>
             <IconRegistry icons={EvaIconsPack} />
             <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
-                <Stack.Screen options={{ title: 'Play VR' }} />
-
-
-                <Layout style={stylesScreen.titleContainer}>
-                    <Text status='success' style={stylesScreen.boldText} category='p2'>Recommended to spend at least 30 minutes playing VR</Text>
-                    <VRImageSelector />
-                </Layout>
                 <Layout style={styles.container}>
-                    <Timer defaultHours={0} defaultMinutes={30} />
+                    <ScrollView>
+                        <Stack.Screen options={{ title: 'Play VR' }} />
+                        <Layout style={stylesScreen.titleContainer}>
+                            <Text status='success' category='label' style={stylesScreen.spacing}>Recommended to spend at least 30 minutes playing VR</Text>
+                            <VRImageSelector />
+                        </Layout>
+                        <Layout style={styles.container}>
+                            <Timer defaultHours={0} defaultMinutes={30} />
+                        </Layout>
+                    </ScrollView>
                     <Link href="/videoGuideHeadset" asChild>
                         <Button status='success' style={stylesScreen.buttonFixed} accessoryRight={arrow}>
                         </Button>
@@ -92,5 +94,9 @@ const stylesScreen = StyleSheet.create({
         right: 20,
         bottom: 20,
     },
+    spacing: {
+        marginTop: 5,
+        marginBottom: 10
+    }
 
 });

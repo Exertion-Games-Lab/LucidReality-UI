@@ -1,10 +1,13 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
+//ALL VARIABLES FOR SENDING COMMANDS STORED IN THIS FILE. TO MAKE THIS POSSIBLE WE WRAP THE WHOLE APP (see the outer most layout.tsx) IN THE APIPROVIDER WHICH ALLOWS ANY SCREEN TO ACCESS THE VARIABLES AND SEND COMMANDS
+
 interface APIVariables {
     baseURL: string;
     port: number;
     ledValue: number;
     soundValue: number;
+    vrGame: string;
     deviceType: string; // "portable" or "lab"
     ledCommandNo: number; // 1 for LAB, 2 for portable
     audioCommandNo: number; // 2 for LAB, 3 for portable
@@ -21,6 +24,7 @@ const defaultValues: APIVariables = {
     port: 8080,
     ledValue: 20,
     soundValue: 20,
+    vrGame: 'Subnautica',
     deviceType: 'lab',
     ledCommandNo: 1,
     audioCommandNo: 2,

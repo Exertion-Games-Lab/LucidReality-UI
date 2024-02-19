@@ -20,9 +20,8 @@ const VideoCard: React.FC<VideoCardProps> = ({ title, excerpt, children }) => {
 
 const styles = StyleSheet.create({
   card: {
-    margin: 0, // Remove any outer margins that might be adding extra space
-    padding: 0, // Remove padding to let the content dictate the card size
     borderWidth: 0, // Optionally remove the border if you want the card to be tight around the video
+    marginBottom: -60
   },
   title: {
     marginHorizontal: 16, // Horizontal padding for title text

@@ -1,34 +1,82 @@
 import { Link, Stack } from 'expo-router';
-import { Pressable, SafeAreaView, StyleSheet, ScrollView, Platform } from 'react-native';
-
-import { useRef } from 'react';
-
-import { View } from '../../../components/Themed';
-
+import { Pressable, SafeAreaView, StyleSheet, ScrollView, Platform, Alert } from 'react-native';
 import styles from "../../../constants/Style";
-
 import { ApplicationProvider, Button, Text, Layout, Icon, IconElement, IconRegistry, Card } from '@ui-kitten/components';
 import * as eva from '@eva-design/eva';
 import { default as theme } from "../../../theme.json";
 import Timer from '../../../components/Timer';
-
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
+import { useEffect, useState } from 'react';
+import { useAPIVariables } from '../../../APICalls/API';
+import axios from 'axios';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
-  );
+);
 
-export default function uninterruptedSleep() {
+
+
+
+export default function cognitiveTraining() {
+    const { apiVariables, setAPIVariables } = useAPIVariables()
+    const [isSending, setIsSending] = useState(false);
+    const payloadAudio = {
+        filename: "THETA.mp3",
+        volume: apiVariables.soundValue,
+        duration: 10000
+    };
+    const payloadLED = {
+        brightness: apiVariables.ledValue,
+        colour: {
+            r: 255,
+            g: 0,
+            b: 0,
+        },
+    }
+    const postURL=apiVariables.baseURL + ':' + apiVariables.port;
+
+    useEffect(() => {
+        let intervalId: ReturnType<typeof setInterval>;
+
+        if (isSending) {
+            intervalId = setInterval(() => {
+                console.log(apiVariables)
+                axios.post(`${postURL}/command/` + apiVariables.audioCommandNo + `/Audio`, payloadAudio, {
+                    timeout: 5000 // 5 seconds timeout
+                })
+                axios.post(`${postURL}/command/` + apiVariables.ledCommandNo + `/VisualStimulus`, payloadLED, {
+                    timeout: 5000 // 5 seconds timeout
+                })
+            }, 15000); // Send commands every 15 seconds
+        }
+
+        return () => {
+            if (intervalId !== undefined) {
+                clearInterval(intervalId); // Clear interval on component unmount or when isSending changes to false
+            }
+        };
+    }, [isSending]);
+
+
+    const toggleSending = () => setIsSending(!isSending);
     return (
         <>
             <IconRegistry icons={EvaIconsPack} />
             <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
                 <Stack.Screen options={{ headerTitle: 'Cognitive Training' }} />
-                <Layout style={stylesScreen.titleContainer}>
-                    <Text status='success' style={stylesScreen.boldText} category='p2'>Cognitive Training</Text>
-                </Layout>
                 <Layout style={styles.container}>
-                    <Timer defaultHours={0} defaultMinutes={10}/>
+                    <ScrollView>
+                        <Card style={styles.card}>
+                            <Text category='label' status='primary'>What do I do?</Text>
+                            <Text category='s1' style={stylesScreen.spacing}>Press start stimuli and get used to the stimuli and how it feels. </Text>
+                            <Text category='s1' style={stylesScreen.spacing}>Train yourself to do a 'reality check' when you experience the stimuli.</Text>
+                            <Text category='s1' style={stylesScreen.spacing}>The idea is you recognise the stimuli while dreaming to gain conciousness resulting in lucidity but not enough to make you wake up</Text>
+                        </Card>
+                        <Button onPress={toggleSending} status={isSending ? 'danger' : 'success'}>
+                            {isSending ? 'Stop Stimuli' : 'Start Stimuli'}
+                        </Button>
+                        <Timer defaultHours={0} defaultMinutes={10} />
+                    </ScrollView>
                 </Layout>
                 <Link href="/lucidDream" asChild>
                     <Button status='success' style={styles.buttonFixed} accessoryRight={arrow}>
@@ -91,4 +139,7 @@ const stylesScreen = StyleSheet.create({
         height: 25,
         size: 50
     },
+    spacing: {
+        margin: 5
+    }
 });

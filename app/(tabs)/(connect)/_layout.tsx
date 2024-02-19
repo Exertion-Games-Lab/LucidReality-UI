@@ -20,6 +20,8 @@ export default function ConnectionLayout() {
       {/* Optionally configure static options outside the route. */}
       <Stack.Screen name="index" options={{title: 'Get Started'}} />
       <Stack.Screen name="Connect" options={{ title: '' }} />
+      <Stack.Screen name="userGuideHeadset" options={{ title: 'Headset Guide' }} />
+      <Stack.Screen name="userGuideServer" options={{ title: 'Server Guide' }} />
     </Stack>
   );
 }
