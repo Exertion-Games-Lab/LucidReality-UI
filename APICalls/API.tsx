@@ -20,7 +20,7 @@ interface APIContextType {
 }
 
 const defaultValues: APIVariables = {
-    baseURL: 'http://192.168.1.7',
+    baseURL: 'http://192.168.86.25',
     port: 8080,
     ledValue: 20,
     soundValue: 20,

@@ -47,7 +47,7 @@ export default function cognitiveTraining() {
                 axios.post(`${postURL}/command/` + apiVariables.ledCommandNo + `/VisualStimulus`, payloadLED, {
                     timeout: 5000 // 5 seconds timeout
                 })
-            }, 15000); // Send commands every 15 seconds
+            }, 11000); // Send commands every 15 seconds
         }
 
         return () => {

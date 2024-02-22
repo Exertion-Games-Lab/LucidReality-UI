@@ -15,6 +15,7 @@ import Timer from '../../../components/Timer';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import { AntDesign } from '@expo/vector-icons';
 import { useAPIVariables } from '../../../APICalls/API';
+import axios from 'axios';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
@@ -25,8 +26,73 @@ export default function lucidDream() {
     const [remState, setRemState] = useState('Checking connection...');
     const [connectionStatus, setConnectionStatus] = useState('Checking connection...');
     const [isLoading, setIsLoading] = useState(true);
+    const [sessionActive, setSessionActive] = useState(false);
+    const payloadAudio = {
+        filename: "THETA.mp3",
+        volume: apiVariables.soundValue,
+        duration: 10000
+    };
+    const payloadLED = {
+        brightness: apiVariables.ledValue,
+        colour: {
+            r: 255,
+            g: 0,
+            b: 0,
+        },
+    }
 
     const postURL = apiVariables.baseURL + ':' + apiVariables.port
+    const intervalIdRef = useRef<NodeJS.Timeout | number | null>(null);
+
+    const startSession = () => {
+        if (sessionActive) {
+            console.log('Session is already active.');
+            return;
+        }
+    
+        setSessionActive(true);
+        intervalIdRef.current = setInterval(() => {
+            (async () => {
+                if (remState === 'REM_PERIOD') {
+                    console.log("REM_PERIOD detected, sending commands...");
+                    try {
+                        await axios.post(`${postURL}/command/${apiVariables.audioCommandNo}/Audio`, payloadAudio, { timeout: 5000 });
+                        await axios.post(`${postURL}/command/${apiVariables.ledCommandNo}/VisualStimulus`, payloadLED, { timeout: 5000 });
+                        console.log('Commands sent successfully.');
+                    } catch (error) {
+                        console.error('Error sending commands:', error);
+                    }
+                }
+            })();
+        }, 5000); 
+    };
+    
+
+    const endSession = () => {
+        if (intervalIdRef.current) {
+            clearInterval(intervalIdRef.current);
+            intervalIdRef.current = null;
+        }
+        setSessionActive(false);
+    };
+
+    useEffect(() => {
+        const sendCommands = async () => {
+            if (remState === 'REM_PERIOD' && sessionActive) {
+                console.log("REM_PERIOD detected, session active, sending commands...");
+                try {
+                    await axios.post(`${postURL}/command/${apiVariables.audioCommandNo}/Audio`, payloadAudio, { timeout: 5000 });
+                    console.log('Audio command sent successfully.');
+                    await axios.post(`${postURL}/command/${apiVariables.ledCommandNo}/VisualStimulus`, payloadLED, { timeout: 5000 });
+                    console.log('Visual stimulus sent successfully.');
+                } catch (error) {
+                    console.error('Error sending commands:', error);
+                }
+            }
+        };
+    
+        sendCommands();
+    }, [remState, sessionActive, apiVariables, postURL, payloadAudio, payloadLED]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -72,9 +138,9 @@ export default function lucidDream() {
                     </Card>
                     <Card style={styles.card}>
                         <Layout style={stylesScreen.row}>
-                        <Text style={stylesScreen.text} category='s1'>REM State: {remState}</Text>
-                        {!isLoading && <AntDesign name="checkcircle" size={24} color="white" />}
-                        {isLoading && <Spinner size='small' />}
+                            <Text style={stylesScreen.text} category='s1'>REM State: {remState}</Text>
+                            {!isLoading && <AntDesign name="checkcircle" size={24} color="white" />}
+                            {isLoading && <Spinner size='small' />}
                         </Layout>
                     </Card>
                 </Layout>
@@ -82,8 +148,8 @@ export default function lucidDream() {
                     <Timer defaultHours={4} defaultMinutes={0} />
 
                     <Link href="/lucidDream" asChild>
-                        <Button status='Danger' style={styles.button} accessoryRight={arrow}>
-                            <Text>End Session</Text>
+                        <Button onPress={sessionActive ? endSession : startSession} style={styles.button}>
+                            <Text>{sessionActive ? 'End Session' : 'Start Session'}</Text>
                         </Button>
                     </Link>
                 </Layout>
