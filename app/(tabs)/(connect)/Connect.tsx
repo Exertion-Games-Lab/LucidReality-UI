@@ -5,51 +5,84 @@ import { ApplicationProvider, Button, Divider, Layout, Text, Modal, Card, Input,
 import * as eva from '@eva-design/eva';
 import { default as theme } from "../../../theme.json";
 import Slider from '@react-native-community/slider';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { APIProvider, useAPIVariables } from '../../../APICalls/API';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { APIVariables, defaultValues, loadAPIVariables, saveAPIVariables } from '../../../APICalls/storage';
+import GlobalEventEmitter from '../../../APICalls/EventEmitter';
 
 function ConnectInner() {
-  const { apiVariables, setAPIVariables } = useAPIVariables(); //so that we can update all global API variables in API.tsx so we can send the correct calibrated calls in other screens
+  const [apiVariables, setApiVariables] = useState<APIVariables>(defaultValues);
   const [sliderValueLED, setSliderValueLED] = useState<number>(apiVariables.ledValue);
   const [sliderValueSound, setSliderValueSound] = useState(apiVariables.soundValue);
   const [baseURL, setBaseURL] = useState<string>(apiVariables.baseURL);
   const [visible, setVisible] = React.useState(false);
   const [port, setPort] = useState<string>('8080');
-  const [deviceType, setDeviceType] = useState(0); // 0 for "lab", 1 for "portable"
   const [isVisualStimulusLoading, setIsVisualStimulusLoading] = useState(false);
   const [isAudioStimulusLoading, setIsAudioStimulusLoading] = useState(false);
+  const [deviceTypeIndex, setDeviceTypeIndex] = useState(apiVariables.deviceType === 'lab' ? 0 : 1); // Index for UI Kitten RadioGroup
 
   //Where we post to server after getting the base IP and port
   const postURL = baseURL + ':' + port;
 
-  // Function to handle device type selection change and update the correct CommandNos
-  const handleDeviceTypeChange = (index: number) => {
-    setDeviceType(index);
-    const deviceTypeValue = index === 0 ? 'lab' : 'portable';
-    console.log(`Device type changed to: ${deviceTypeValue}`);
-    setAPIVariables({
-      deviceType: deviceTypeValue,
-      ledCommandNo: index === 0 ? 1 : 2,
-      audioCommandNo: index === 0 ? 2 : 3,
-      gvsCommandNo: index === 0 ? 4 : 5,
-    });
+  useEffect(() => {
+    const fetchApiVariables = async () => {
+      const vars = await loadAPIVariables();
+      setApiVariables(vars);
+      setSliderValueLED(vars.ledValue);
+      setSliderValueSound(vars.soundValue);
+      setBaseURL(vars.baseURL);
+      setDeviceTypeIndex(vars.deviceType === 'lab' ? 0 : 1);
+    };
+    fetchApiVariables();
+  }, []);
+
+  const handleSaveChanges = async () => {
+    const updatedVariables = { ...apiVariables, ledValue: sliderValueLED, soundValue: sliderValueSound, baseURL };
+    await saveAPIVariables(updatedVariables);
+    Alert.alert("Success", "API variables saved.");
+    GlobalEventEmitter.emit('variablesUpdated');
   };
 
-  // Function to update API Variables and log the updates
-  const updateAPIVariables = () => {
-    // New values for API variables
-    const newAPIVariables = {
-      baseURL: baseURL,
+  const handleDeviceTypeChange = async (index: number) => {
+    // Explicitly define deviceType as 'portable' | 'lab' based on the index
+    const deviceType: 'portable' | 'lab' = index === 0 ? 'lab' : 'portable';
+
+    // Updated APIVariables object with the correct type for deviceType
+    const updatedVariables: APIVariables = {
+      ...apiVariables,
+      deviceType,
+      ledCommandNo: deviceType === 'lab' ? 1 : 2,
+      audioCommandNo: deviceType === 'lab' ? 2 : 3,
+      gvsCommandNo: deviceType === 'lab' ? 4 : 5,
+      // Other properties remain unchanged
+      baseURL: apiVariables.baseURL,
+      port: apiVariables.port,
       ledValue: sliderValueLED,
       soundValue: sliderValueSound,
+      vrGame: apiVariables.vrGame,
     };
 
-    // Set new API Variables
-    setAPIVariables(newAPIVariables);
+    await saveAPIVariables(updatedVariables);
+    setApiVariables(updatedVariables);
+    setDeviceTypeIndex(index);
+  };
 
-    // Log the updated values
-    console.log('API Variables updated:', newAPIVariables);
+
+  //LED VALUE CHANGE
+  const handleLedValueChange = async (value: number) => {
+    const updatedVariables = { ...apiVariables, ledValue: value };
+    setSliderValueLED(value); // Update slider value
+    await saveAPIVariables(updatedVariables); // Save updated variables to AsyncStorage
+    setApiVariables(updatedVariables); // Update state
+  };
+
+  //SOUND VALUE CHANGE
+  const handleSoundValueChange = async (value: number) => {
+    const updatedVariables = { ...apiVariables, soundValue: value };
+    setSliderValueSound(value); // Update slider value
+    await saveAPIVariables(updatedVariables); // Save updated variables to AsyncStorage
+    setApiVariables(updatedVariables); // Update state
   };
 
   //SEND LED COMMAND TO SERVER
@@ -116,7 +149,7 @@ function ConnectInner() {
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
         <RadioGroup
-          selectedIndex={deviceType}
+          selectedIndex={deviceTypeIndex}
           onChange={handleDeviceTypeChange}>
           <Radio>Lab</Radio>
           <Radio>Portable</Radio>
@@ -167,15 +200,15 @@ function ConnectInner() {
         <Text category='label' status='danger' style={stylesScreen.label}>Ensure to test stimuli before exiting the screen!</Text>
 
         <Text category='h6'>LED Brightness</Text>
-        <Text category='c1'>{sliderValueLED}</Text>
+        <Text category='c1'>{apiVariables.ledValue}</Text>
         <Slider
           style={{ width: 250, height: 40 }}
           minimumValue={0}
           maximumValue={40}
           minimumTrackTintColor="#FFFFFF"
           maximumTrackTintColor="#000000"
-          value={sliderValueLED}
-          onValueChange={value => setSliderValueLED(value)}
+          value={apiVariables.ledValue}
+          onValueChange={value => handleLedValueChange(value)}
           step={5}
           onSlidingComplete={() => console.log("Sliding Complete" + { sliderValueLED })}
         />
@@ -199,15 +232,15 @@ function ConnectInner() {
 
 
         <Text category='h6'>Sound Volume</Text>
-        <Text category='c1'>{sliderValueSound}</Text>
+        <Text category='c1'>{apiVariables.soundValue}</Text>
         <Slider
           style={{ width: 250, height: 40 }}
           minimumValue={0}
           maximumValue={100}
           minimumTrackTintColor="#FFFFFF"
           maximumTrackTintColor="#000000"
-          value={sliderValueSound}
-          onValueChange={value => setSliderValueSound(value)}
+          value={apiVariables.soundValue}
+          onValueChange={value => handleSoundValueChange(value)}
           step={10}
           onSlidingComplete={() => console.log("Sliding complete" + { sliderValueSound })}
         />
@@ -230,7 +263,7 @@ function ConnectInner() {
         )}
 
         <Text category='label' status='danger'>Please save before exiting the screen!</Text>
-        <Button status='danger' style={styles.button} onPress={updateAPIVariables}>
+        <Button status='danger' style={styles.button} onPress={handleSaveChanges}>
           <Text style={styles.buttonText}>SAVE CHANGES</Text>
         </Button>
       </Layout>

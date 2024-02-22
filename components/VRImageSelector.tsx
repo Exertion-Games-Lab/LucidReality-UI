@@ -1,59 +1,72 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import { IndexPath, Select, SelectItem, Layout, Card } from '@ui-kitten/components';
 import { Image } from 'expo-image';
-import { useAPIVariables } from '../APICalls/API';
+import { APIVariables, defaultValues, loadAPIVariables, saveAPIVariables } from '../APICalls/storage';
 
-//This component selects a game and also updates it in API.tsx. For future use can implement backend for specific vrGame API calls/stimuli
 const VRImageSelector = () => {
-    const { apiVariables, setAPIVariables } = useAPIVariables(); //so that we can update all global API variables in API.tsx so we can send the correct calibrated calls in other screens
     const [selectedIndex, setSelectedIndex] = useState(new IndexPath(0));
+    const [apiVariables, setApiVariables] = useState<APIVariables>(defaultValues);
+    const [displayValue, setDisplayValue] = useState('Select a VR Game');
+
     const images = [
         { uri: 'https://cdn.akamai.steamstatic.com/steam/apps/264710/capsule_616x353.jpg?t=1700522118' },
         { uri: 'https://xxboxnews.blob.core.windows.net/prod/sites/2/2021/08/NMS_Frontiers_Hero.jpg' },
         { uri: 'https://cdn.logojoy.com/wp-content/uploads/20231208133956/11-30-23_Minecraft-Logo-Evolution_HEADER.webp' },
     ];
-    const blurhash =
-    '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';
-    const [displayValue, setDisplayValue] = useState('Select an VR Game');
     const titles = ["Subnautica", "No Man's Sky", "Minecraft"]; // Titles for the images
 
-    const handleSelect = (index: IndexPath | IndexPath[]) => {
-        // If multiple selection is enabled, 'index' can be an array of IndexPath objects.
-        // For single selection, 'index' will be a single IndexPath object.
-        // Ensure compatibility with both cases by treating 'index' as an array and taking the first element.
+    useEffect(() => {
+        // Load the current API variables from storage when the component mounts
+        const fetchApiVariables = async () => {
+            const vars = await loadAPIVariables();
+            setApiVariables(vars);
+            if (vars.vrGame && titles.includes(vars.vrGame)) {
+                setDisplayValue(vars.vrGame);
+                setSelectedIndex(new IndexPath(titles.indexOf(vars.vrGame)));
+            }
+        };
+        fetchApiVariables();
+    }, []);
+
+    const handleSelect = async (index: IndexPath | IndexPath[]) => {
         const selectedIndex = Array.isArray(index) ? index[0] : index;
         setSelectedIndex(selectedIndex);
         const selectedGameTitle = titles[selectedIndex.row];
         setDisplayValue(selectedGameTitle);
-    
-        // Update the vrGame variable in the global API context
-        setAPIVariables({
-            ...apiVariables, // Spread existing apiVariables to retain other values
-            vrGame: selectedGameTitle, // Update vrGame with the selected title
-        });
-        console.log(apiVariables.vrGame)
+
+        // Create a new APIVariables object with the updated vrGame
+        const updatedVariables: APIVariables = {
+            ...apiVariables,
+            vrGame: selectedGameTitle,
+        };
+
+        // Save the updated API variables to AsyncStorage
+        await saveAPIVariables(updatedVariables);
+
+        // Optionally, update the local state with the new variables
+        setApiVariables(updatedVariables);
+
+        console.log(`VR Game updated to: ${selectedGameTitle}`);
     };
 
     return (
         <Layout style={styles.container}>
             <Card style={styles.card}>
-            <Select
-                    selectedIndex={selectedIndex}
-                    value={displayValue}
-                    onSelect={handleSelect}>
+                <Select selectedIndex={selectedIndex} value={displayValue} onSelect={handleSelect}>
                     {titles.map((title, index) => (
                         <SelectItem key={index} title={title} />
                     ))}
                 </Select>
 
-            <View style={styles.imageContainer}>
-                <Image source={images[selectedIndex.row]} placeholder={blurhash} style={styles.image} />
-            </View>
+                <View style={styles.imageContainer}>
+                    <Image source={images[selectedIndex.row]} style={styles.image} />
+                </View>
             </Card>
         </Layout>
     );
 };
+
 
 // Dynamically calculate card width based on screen width
 const screenWidth = Dimensions.get('window').width;
@@ -71,8 +84,8 @@ const styles = StyleSheet.create({
         height: 200,
         width: imageWidth,
         justifyContent: 'center',
-        alignItems: 'center', 
-    
+        alignItems: 'center',
+
     },
     image: {
         width: '100%',

@@ -7,7 +7,6 @@ import { useColorScheme } from 'react-native';
 import { ApplicationProvider } from '@ui-kitten/components';
 import * as eva from '@eva-design/eva';
 import { default as theme } from "../theme.json"
-import { APIProvider } from '../APICalls/API';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -50,13 +49,11 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <APIProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         </Stack>
       </ThemeProvider>
-    </APIProvider>
   );
 }

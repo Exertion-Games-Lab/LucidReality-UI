@@ -7,58 +7,91 @@ import { default as theme } from "../../../theme.json";
 import Timer from '../../../components/Timer';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import { useEffect, useState } from 'react';
-import { useAPIVariables } from '../../../APICalls/API';
 import axios from 'axios';
+import { loadAPIVariables, APIVariables, defaultValues } from '../../../APICalls/storage';
+import GlobalEventEmitter from '../../../APICalls/EventEmitter';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
 );
 
-
-
-
 export default function cognitiveTraining() {
-    const { apiVariables, setAPIVariables } = useAPIVariables()
+    // loads from AsyncStorage
+    const [apiVariables, setApiVariables] = useState<APIVariables>(defaultValues);
     const [isSending, setIsSending] = useState(false);
-    const payloadAudio = {
-        filename: "THETA.mp3",
-        volume: apiVariables.soundValue,
-        duration: 10000
+    const [isLoading, setIsLoading] = useState(false); // To control spinner visibility
+
+    //Reloads variables if save button is pressed on connect page
+    useEffect(() => {
+        const fetchVariables = async () => {
+            const loadedVariables = await loadAPIVariables();
+            setApiVariables(loadedVariables);
+        };
+
+        // Listen for updates
+        const updateListener = () => {
+            fetchVariables(); // Re-fetch variables when an update is detected
+        };
+
+        GlobalEventEmitter.on('variablesUpdated', updateListener);
+
+        // Initial fetch
+        fetchVariables();
+
+        // Cleanup
+        return () => {
+            GlobalEventEmitter.removeListener('variablesUpdated', updateListener);
+        };
+    }, []);
+
+    // Ensure apiVariables is loaded before proceeding
+    if (!apiVariables) return null; // Or some loading state
+
+    const sendCommands = async () => {
+        setIsLoading(true); // Show spinner when sending commands
+
+        const payloadAudio = {
+            filename: "THETA.mp3",
+            volume: apiVariables.soundValue,
+            duration: 10000,
+        };
+        const payloadLED = {
+            brightness: apiVariables.ledValue,
+            colour: { r: 255, g: 0, b: 0 },
+        };
+        const postURL = `${apiVariables.baseURL}:${apiVariables.port}`;
+
+        const audioCommandPromise = axios.post(`${postURL}/command/${apiVariables.audioCommandNo}/Audio`, payloadAudio);
+        const ledCommandPromise = axios.post(`${postURL}/command/${apiVariables.ledCommandNo}/VisualStimulus`, payloadLED);
+
+        Promise.all([audioCommandPromise, ledCommandPromise])
+            .then(([audioResponse, ledResponse]) => {
+                console.log('Audio command sent');
+                console.log('LED command sent');
+            })
+            .catch((error) => {
+                // Log and alert the error. Stop sending stimuli too
+                toggleSending();
+                Alert.alert("Error", "Failed to send commands. Please check your connection and try again.");
+                console.error('Error sending commands:', error);
+            })
+            .finally(() => {
+                setIsLoading(false); // Hide spinner after commands are sent or failed
+            });
     };
-    const payloadLED = {
-        brightness: apiVariables.ledValue,
-        colour: {
-            r: 255,
-            g: 0,
-            b: 0,
-        },
-    }
-    const postURL=apiVariables.baseURL + ':' + apiVariables.port;
+
 
     useEffect(() => {
-        let intervalId: ReturnType<typeof setInterval>;
-
         if (isSending) {
-            intervalId = setInterval(() => {
-                console.log(apiVariables)
-                axios.post(`${postURL}/command/` + apiVariables.audioCommandNo + `/Audio`, payloadAudio, {
-                    timeout: 5000 // 5 seconds timeout
-                })
-                axios.post(`${postURL}/command/` + apiVariables.ledCommandNo + `/VisualStimulus`, payloadLED, {
-                    timeout: 5000 // 5 seconds timeout
-                })
-            }, 11000); // Send commands every 15 seconds
+            sendCommands(); // Send immediately
+            const intervalId = setInterval(sendCommands, 11000); // Then every 11 seconds
+
+            return () => clearInterval(intervalId);
         }
-
-        return () => {
-            if (intervalId !== undefined) {
-                clearInterval(intervalId); // Clear interval on component unmount or when isSending changes to false
-            }
-        };
-    }, [isSending]);
-
+    }, [isSending, apiVariables]);
 
     const toggleSending = () => setIsSending(!isSending);
+
     return (
         <>
             <IconRegistry icons={EvaIconsPack} />

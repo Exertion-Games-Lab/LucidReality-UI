@@ -1,28 +1,28 @@
 import { Link, Stack } from 'expo-router';
 import { Pressable, SafeAreaView, StyleSheet, ScrollView, Platform } from 'react-native';
-
 import { useEffect, useRef, useState } from 'react';
-
-import { View } from '../../../components/Themed';
-
 import styles from "../../../constants/Style";
-
-import { ApplicationProvider, Button, Text, Layout, Icon, IconElement, IconRegistry, Card, Spinner } from '@ui-kitten/components';
+import { ApplicationProvider, Button, Text, Layout, Icon, IconElement, IconRegistry, Card, Spinner, Modal } from '@ui-kitten/components';
 import * as eva from '@eva-design/eva';
 import { default as theme } from "../../../theme.json";
 import Timer from '../../../components/Timer';
-
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import { AntDesign } from '@expo/vector-icons';
-import { useAPIVariables } from '../../../APICalls/API';
 import axios from 'axios';
+import { APIVariables, defaultValues, loadAPIVariables, saveAPIVariables } from '../../../APICalls/storage';
+import GlobalEventEmitter from '../../../APICalls/EventEmitter';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
 );
 
 export default function lucidDream() {
-    const { apiVariables, setAPIVariables } = useAPIVariables();
+    //const { apiVariables, setAPIVariables } = useAPIVariables();
+    const [modalVisible, setModalVisible] = useState(false);
+    const [remTimes, setRemTimes] = useState<string[]>([]);
+
+    const [commandCount, setCommandCount] = useState(0)
+    const [apiVariables, setApiVariables] = useState<APIVariables>(defaultValues);
     const [remState, setRemState] = useState('Checking connection...');
     const [connectionStatus, setConnectionStatus] = useState('Checking connection...');
     const [isLoading, setIsLoading] = useState(true);
@@ -44,29 +44,107 @@ export default function lucidDream() {
     const postURL = apiVariables.baseURL + ':' + apiVariables.port
     const intervalIdRef = useRef<NodeJS.Timeout | number | null>(null);
 
+    //Reloads variables if save button is pressed on connect page
+    useEffect(() => {
+        const fetchVariables = async () => {
+            const loadedVariables = await loadAPIVariables();
+            setApiVariables(loadedVariables);
+        };
+
+        // Listen for updates
+        const updateListener = () => {
+            fetchVariables(); // Re-fetch variables when an update is detected
+        };
+
+        GlobalEventEmitter.on('variablesUpdated', updateListener);
+
+        // Initial fetch
+        fetchVariables();
+
+        // Cleanup
+        return () => {
+            GlobalEventEmitter.removeListener('variablesUpdated', updateListener);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!sessionActive) return;
+        const interval = setInterval(checkREMState, 5000);
+        return () => clearInterval(interval);
+    }, [sessionActive]);
+
+    useEffect(() => {
+        if (remState === 'REM_PERIOD') {
+            sendCommands();
+        }
+    }, [remState, sessionActive]);
+
+    const checkREMState = () => {
+        // Implementation of REM state checking logic
+        const url = 'http://127.0.0.1:5000/get_rem';
+
+        // Make a GET request to the endpoint
+        fetch(url)
+            .then(response => {
+                // Check if the response is successful
+                if (response.ok) {
+                    return response.json(); // Parse the JSON response body
+                } else {
+                    // If the response is not successful, throw an error
+                    throw new Error('Failed to fetch REM state');
+                }
+            })
+            .then(data => {
+                // Update the REM state with the data received from the server
+                setRemState(data.state); // Assuming the JSON response contains a "state" field
+                setConnectionStatus('Connected'); // Update connection status
+                setIsLoading(false); // Stop showing the loading spinner
+                if (data.state === 'REM_PERIOD') {
+                    // Capture the current time
+                    const currentTime = new Date().toLocaleTimeString();
+                    setRemTimes(prevTimes => [...prevTimes, currentTime]);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching REM state:', error);
+                setConnectionStatus('reconnecting...');
+                setRemState('reconnecting...')
+                setIsLoading(true); // Optionally, show the loading spinner if trying to reconnect or fetch again
+            });
+
+
+    };
+
     const startSession = () => {
         if (sessionActive) {
             console.log('Session is already active.');
             return;
         }
-    
+
         setSessionActive(true);
-        intervalIdRef.current = setInterval(() => {
-            (async () => {
-                if (remState === 'REM_PERIOD') {
-                    console.log("REM_PERIOD detected, sending commands...");
-                    try {
-                        await axios.post(`${postURL}/command/${apiVariables.audioCommandNo}/Audio`, payloadAudio, { timeout: 5000 });
-                        await axios.post(`${postURL}/command/${apiVariables.ledCommandNo}/VisualStimulus`, payloadLED, { timeout: 5000 });
-                        console.log('Commands sent successfully.');
-                    } catch (error) {
-                        console.error('Error sending commands:', error);
-                    }
-                }
-            })();
-        }, 5000); 
+
+        // Immediately send commands before setting the interval
+        sendCommands();
     };
-    
+
+    const sendCommands = async () => {
+        if (remState === 'REM_PERIOD' && sessionActive) {
+            console.log("REM_PERIOD detected, sending commands...");
+            try {
+                await axios.post(`${postURL}/command/${apiVariables.audioCommandNo}/Audio`, payloadAudio, { timeout: 5000 });
+                console.log('Audio command sent successfully.');
+                await axios.post(`${postURL}/command/${apiVariables.ledCommandNo}/VisualStimulus`, payloadLED, { timeout: 5000 });
+                console.log('Visual stimulus sent successfully.');
+                await axios.post(`${postURL}/command/${apiVariables.gvsCommandNo}/GVSStimulus`, {});
+                console.log('GVS stimulus sent successfully.');
+                console.log('Commands sent successfully.');
+            } catch (error) {
+                console.error('Error sending commands:', error);
+            } finally {
+                setIsLoading(false); // Stop loading spinner after sending commands
+            }
+        }
+    };
 
     const endSession = () => {
         if (intervalIdRef.current) {
@@ -74,51 +152,10 @@ export default function lucidDream() {
             intervalIdRef.current = null;
         }
         setSessionActive(false);
+        setModalVisible(true);
     };
 
-    useEffect(() => {
-        const sendCommands = async () => {
-            if (remState === 'REM_PERIOD' && sessionActive) {
-                console.log("REM_PERIOD detected, session active, sending commands...");
-                try {
-                    await axios.post(`${postURL}/command/${apiVariables.audioCommandNo}/Audio`, payloadAudio, { timeout: 5000 });
-                    console.log('Audio command sent successfully.');
-                    await axios.post(`${postURL}/command/${apiVariables.ledCommandNo}/VisualStimulus`, payloadLED, { timeout: 5000 });
-                    console.log('Visual stimulus sent successfully.');
-                } catch (error) {
-                    console.error('Error sending commands:', error);
-                }
-            }
-        };
-    
-        sendCommands();
-    }, [remState, sessionActive, apiVariables, postURL, payloadAudio, payloadLED]);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            fetch(`http://127.0.0.1:5000/get_rem`) //always runs on this IP and port by default regardless of device
-                .then((response) => {
-                    if (response.ok) {
-                        setConnectionStatus('Connected');
-                        setIsLoading(false); // Stop showing the loading spinner once connected
-                        return response.json();
-                    } else {
-                        throw new Error('Server responded with an error!');
-                    }
-                })
-                .then((data) => {
-                    setRemState(data.state);
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                    setConnectionStatus('reconnecting...');
-                    setRemState('reconnecting...')
-                    setIsLoading(true); // Show the loading spinner on error
-                });
-        }, 5000); // Poll every 5000 milliseconds (5 seconds)
-
-        return () => clearInterval(interval); // Cleanup the interval on component unmount
-    }, []);
 
     return (
         <>
@@ -152,6 +189,24 @@ export default function lucidDream() {
                             <Text>{sessionActive ? 'End Session' : 'Start Session'}</Text>
                         </Button>
                     </Link>
+
+                    <Modal
+                        visible={modalVisible}
+                        backdropStyle={stylesScreen.backdrop}
+                        onBackdropPress={() => setModalVisible(false)}>
+                        <Card disabled={true}>
+                            <Text category='h6'>REM Period Achieved At:</Text>
+                            <ScrollView>
+                                {remTimes.map((time, index) => (
+                                    <Text key={index}>{time}</Text>
+                                ))}
+                            </ScrollView>
+                            <Button onPress={() => setModalVisible(false)}>
+                                Close
+                            </Button>
+                        </Card>
+                    </Modal>
+
                 </Layout>
             </ApplicationProvider>
         </>
@@ -224,5 +279,8 @@ const stylesScreen = StyleSheet.create({
     },
     text: {
         marginRight: 10, // Adds some spacing between the text and the spinner
+    },
+    backdrop: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
 });
