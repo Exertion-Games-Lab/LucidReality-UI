@@ -257,7 +257,6 @@ const stylesScreen = StyleSheet.create({
         borderRadius: 50,
         borderColor: 'black',
         backgroundColor: 'black',
-        marginLeft: 10
     },
     icon: {
         width: 25,
