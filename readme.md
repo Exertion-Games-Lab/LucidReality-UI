@@ -2,7 +2,7 @@
 This app is built using React-Native with Expo Go.
 
 **Folder layout:**
-- **app Folder:
+- **app Folder:**
 	- This is the main folder with all the screens.
 	- As per expo navigation, you can find a folder for each tab which inside contains all the screens that are relevant for the tab. You can tell it is a tab because the name is enclosed in brackets. Eg. (connect), (home), (journal)
 	- The index.tsx file in each tab folder is the primary screen. 
