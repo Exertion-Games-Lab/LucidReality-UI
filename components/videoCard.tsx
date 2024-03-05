@@ -2,11 +2,13 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Card, Text } from '@ui-kitten/components';
 
+
 interface VideoCardProps {
   title?: string;
   excerpt?: string;
   children?: React.ReactNode;
 }
+
 
 const VideoCard: React.FC<VideoCardProps> = ({ title, excerpt, children }) => {
   return (
@@ -21,11 +23,10 @@ const VideoCard: React.FC<VideoCardProps> = ({ title, excerpt, children }) => {
 const styles = StyleSheet.create({
   card: {
     borderWidth: 0, // Optionally remove the border if you want the card to be tight around the video
-    marginBottom: -60
+    marginBottom: -130,
   },
   title: {
     marginHorizontal: 16, // Horizontal padding for title text
-    marginTop: 16, // Top padding for title text
     marginBottom: 8, // Space between title and excerpt
   },
   excerpt: {

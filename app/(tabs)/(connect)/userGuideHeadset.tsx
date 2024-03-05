@@ -21,34 +21,34 @@ export default function userGuideHeadset() {
             <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
                 <Stack.Screen options={{ headerTitle: 'Headset Guide' }} />
                 <ScrollView>
-                <Layout>
-                    <Card style={styles.card}>
-                        <Text category='h2'>Headset Guide</Text>
-                        <Text category='s1' status='danger'>Please note:</Text>
-                        <Text category='s1' style={stylesScreen.spacing} status='danger'>This screen will reappear as you progress through a sleep session, do not start the detection script now!</Text>
-                        <Text category='s1' style={stylesScreen.spacing}>Only start the detector.py Script when this screen is promted in your Sleep Session. This will be right before your lucid dream</Text>
-                    </Card>
-                </Layout>
-                <Layout style={styles.container}>
-                    <VideoCard
-                        title="Step 1: Wear the headset"
-                        excerpt="Please closely follow the electrode placements shown in the video."
-                    >
-                        <YoutubePlayer height={300} width={400} play={false} videoId={'DRGktMG2MhI'} />
-                    </VideoCard>
-                </Layout>
-                <Layout>
-                <Card style={styles.card}>
-                    <Text category='label'>Step 2</Text>
-                    <Text category='s1' style={stylesScreen.spacing}>Navigate to LucidReality-Devices/detector folder in your terminal</Text>
+                    <Layout>
+                        <Card style={styles.card}>
+                            <Text category='h2'>Headset Guide</Text>
+                            <Text category='s1' status='danger'>Please note:</Text>
+                            <Text category='s1' style={stylesScreen.spacing} status='danger'>This screen will reappear as you progress through a sleep session, do not start the detection script now!</Text>
+                            <Text category='s1' style={stylesScreen.spacing}>Only start the detector.py Script when this screen is promted in your Sleep Session. This will be right before your lucid dream</Text>
+                        </Card>
+                    </Layout>
+                    <Layout style={styles.container}>
+                        <VideoCard
+                            title="Step 1: Wear the headset"
+                            excerpt="Please closely follow the electrode placements shown in the video."
+                        >
+                            <YoutubePlayer height={300}  play={false} videoId={'DRGktMG2MhI'} />
+                        </VideoCard>
+                    </Layout>
+                    <Layout>
+                        <Card style={styles.card}>
+                            <Text category='label'>Step 2</Text>
+                            <Text category='s1' style={stylesScreen.spacing}>Navigate to LucidReality-Devices/detector folder in your terminal</Text>
 
-                    <Text category='label'>Step 3</Text>
-                    <Text category='s1' style={stylesScreen.spacing}>In the terminal type 'python Detector.py' and press enter</Text>
+                            <Text category='label'>Step 3</Text>
+                            <Text category='s1' style={stylesScreen.spacing}>In the terminal type 'python Detector.py' and press enter</Text>
 
-                    <Text category='label'>Step 4</Text>
-                    <Text category='s1' style={stylesScreen.spacing}>The script is running successfully if you see the terminal print a ip address and output the REM state to console every second</Text>
-                </Card>
-                </Layout>
+                            <Text category='label'>Step 4</Text>
+                            <Text category='s1' style={stylesScreen.spacing}>The script is running successfully if you see the terminal print a ip address and output the REM state to console every second</Text>
+                        </Card>
+                    </Layout>
                 </ScrollView>
             </ApplicationProvider >
         </>

@@ -1,4 +1,9 @@
 import { StyleSheet } from "react-native"
+import { Dimensions } from 'react-native';
+
+const screenWidth = Dimensions.get('window').width;
+const dynamicWidth = screenWidth * 0.9;
+
 
 export default StyleSheet.create({
   container: {
@@ -56,7 +61,7 @@ export default StyleSheet.create({
   },
   card: {
     backgroundColor: 'rgba(0,0,0,0.5)',
-    width: 'auto',
+    width: dynamicWidth,
     padding: 10,
     borderRadius: 30,
     margin: 10,

@@ -10,6 +10,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { APIVariables, defaultValues, loadAPIVariables, saveAPIVariables } from '../../../APICalls/storage';
 import GlobalEventEmitter from '../../../APICalls/EventEmitter';
+import { KeyboardAvoidingView, Platform } from 'react-native';
+
 
 function ConnectInner() {
   const [apiVariables, setApiVariables] = useState<APIVariables>(defaultValues);
@@ -221,8 +223,6 @@ function ConnectInner() {
         ) : (
           <Button
             style={styles.button}
-            appearance='outline'
-            status='basic'
             onPress={sendVisualStimulus}
             disabled={isVisualStimulusLoading}
           >
@@ -253,8 +253,6 @@ function ConnectInner() {
         ) : (
           <Button
             style={styles.button}
-            appearance='outline'
-            status='basic'
             onPress={sendAudioStimulus}
             disabled={isAudioStimulusLoading}
           >

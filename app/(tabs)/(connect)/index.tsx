@@ -14,7 +14,7 @@ export default function Home() {
       <Layout style={styles.container}>
         <Text category='h2'>Connect Now</Text>
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-        <Text category='label' status='success'>If your server is already up and running:</Text>
+        <Text category='label'>If your server is already up and running:</Text>
         <Link href="/Connect" asChild>
           <Button style={styles.button}>
             <Text>Connect & Calibrate</Text>
@@ -25,7 +25,7 @@ export default function Home() {
             <Text style={styles.buttonText}>Headset Guide</Text>
           </Button>
         </Link>
-        <Text category='label' status='danger'>If you need help setting up the server:</Text>
+        <Text category='label'>If you need help setting up the server:</Text>
         <Link href="../userGuideServer" asChild>
           <Button style={styles.button}>
             <Text style={styles.buttonText}>Server Setup Guide</Text>

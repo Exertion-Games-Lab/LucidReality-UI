@@ -46,6 +46,13 @@ const DreamJournalScreen: React.FC = () => {
     });
     const [selectedIndex, setSelectedIndex] = useState<IndexPath>(new IndexPath(0));
 
+    // State to control the visibility of DateTimePicker
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [showTimePicker, setShowTimePicker] = useState(false);
+    //Save button enabled or not
+    const [isSaveButtonEnabled, setIsSaveButtonEnabled] = useState(false);
+
+
     //Recording
     const [recording, setRecording] = useState<Audio.Recording | null>(null);
     const [isRecording, setIsRecording] = useState(false);
@@ -139,17 +146,21 @@ const DreamJournalScreen: React.FC = () => {
     };
 
 
-    // Date change handler
-    const onChangeDate = (_: any, selectedDate?: Date) => {
-        const currentDate = selectedDate ? selectedDate.toISOString() : newEntry.date; // Keep existing date if none selected
-        setNewEntry({ ...newEntry, date: currentDate });
+    // Adjusted Date change handler
+    const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        const currentDate = selectedDate || new Date();
+        setShowDatePicker(Platform.OS === 'ios'); // Hide picker on Android after selection
+        setNewEntry({ ...newEntry, date: currentDate.toISOString() });
     };
 
-    // Time change handler
-    const onChangeTime = (_: any, selectedTime?: Date) => {
-        const currentTime = selectedTime ? selectedTime.toISOString() : newEntry.sleepHours; // Keep existing time if none selected
-        setNewEntry({ ...newEntry, sleepHours: currentTime });
+    // Adjusted Time change handler
+    const onChangeTime = (event: DateTimePickerEvent, selectedTime?: Date) => {
+        const currentTime = selectedTime || new Date();
+        setShowTimePicker(Platform.OS === 'ios'); // Hide picker on Android after selection
+        setNewEntry({ ...newEntry, sleepHours: currentTime.toISOString() });
     };
+
+
 
     const formatDate = (isoString: string | number | Date) => {
         const date = new Date(isoString);
@@ -362,30 +373,67 @@ const DreamJournalScreen: React.FC = () => {
                         <Card disabled={true} style={dynamicStyles.modalCard}>
                             <ScrollView>
                                 <Input
-                                    label="Title"
+                                    label="Title*"
                                     style={styles.spacing}
                                     value={newEntry.title}
                                     onChangeText={(text) => setNewEntry({ ...newEntry, title: text })}
                                 />
-                                <Text category='label' style={styles.label}>Date</Text>
-                                <DateTimePicker
-                                    testID="dateTimePicker-date"
-                                    value={new Date(newEntry.date || new Date().toISOString())} // Fallback to current date if newEntry.date is empty
-                                    mode="date"
-                                    display="default"
-                                    onChange={onChangeDate}
-                                    style={styles.picker}
+
+                                <Input
+                                    label="Description"
+                                    value={newEntry.description}
+                                    onChangeText={(text) => setNewEntry({ ...newEntry, description: text })}
+                                    textStyle={{ minHeight: 130 }}
+                                    multiline={true}
+                                    style={styles.spacing}
                                 />
-                                <Text category='label' style={styles.label}>Wake Up Time</Text>
-                                <DateTimePicker
-                                    testID="dateTimePicker-time"
-                                    value={newEntry.sleepHours ? new Date(newEntry.sleepHours) : new Date()} // Use today's date with the stored time or fallback to current time
-                                    mode="time"
-                                    is24Hour={true}
-                                    display="default"
-                                    onChange={onChangeTime}
-                                    style={styles.picker}
-                                />
+                                <Text category='label' style={styles.label}>Date*</Text>
+                                <Layout>
+
+                                    {newEntry.date && (
+                                        <Text category='label'>
+                                            Selected Date: {formatDate(newEntry.date)}
+                                        </Text>
+                                    )}
+                                    <Button onPress={() => setShowDatePicker(true)} style={styles.spacing}>
+                                        Select Date
+                                    </Button>
+                                </Layout>
+                                {
+                                    showDatePicker && (
+                                        <DateTimePicker
+                                            testID="dateTimePicker-date"
+                                            value={new Date(newEntry.date || new Date().toISOString())}
+                                            mode="date"
+                                            display="default"
+                                            onChange={onChangeDate}
+                                        />
+                                    )
+                                }
+                                <Text category='label' style={styles.label}>Wake Up Time*</Text>
+                                <Layout>
+
+                                    {newEntry.sleepHours && (
+                                        <Text category='label'>
+                                            Selected Time: {formatTime(newEntry.sleepHours)}
+                                        </Text>
+                                    )}
+                                    <Button onPress={() => setShowTimePicker(true)} style={styles.spacing}>
+                                        Select Wake Up Time
+                                    </Button>
+                                </Layout>
+                                {
+                                    showTimePicker && (
+                                        <DateTimePicker
+                                            testID="dateTimePicker-time"
+                                            value={new Date(newEntry.sleepHours || new Date().toISOString())}
+                                            mode="time"
+                                            is24Hour={true}
+                                            display="default"
+                                            onChange={onChangeTime}
+                                        />
+                                    )
+                                }
 
                                 <Select
                                     selectedIndex={selectedIndex}
@@ -399,14 +447,6 @@ const DreamJournalScreen: React.FC = () => {
                                     <SelectItem title='Nightmare' />
                                     <SelectItem title='Recurring' />
                                 </Select>
-                                <Input
-                                    label="Description"
-                                    value={newEntry.description}
-                                    onChangeText={(text) => setNewEntry({ ...newEntry, description: text })}
-                                    textStyle={{ minHeight: 130 }}
-                                    multiline={true}
-                                    style={styles.spacing}
-                                />
                                 {isRecording ? <StopButton /> : <RecordButton />}
 
                                 <Button onPress={handleAddEditEntry}>
@@ -430,7 +470,7 @@ const modalWidth = screenWidth * 0.9; // 90% of the screen width
 const dynamicStyles = StyleSheet.create({
     modalCard: {
         width: modalWidth, // Use the dynamically calculated width
-        height: 590,
+        height: 650,
         alignSelf: 'center', // Center the card
     },
 });

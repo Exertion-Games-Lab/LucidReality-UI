@@ -1,4 +1,5 @@
 // EventEmitter.ts
+//OUTDATED
 //The eventemitter is responsible for reloading components and screens if anything in the connect.tsx is changed. This ensures that we are always using the most up to date API VARIABLES.
 import { EventEmitter } from 'events';
 

@@ -41,9 +41,9 @@ const blurhash =
     '|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[';
 
 //Pics needed for this screen
-import imgSleepTracker from '../../../assets/images/DSC00181.png'
-import imgLabUser from '../../../assets/images/DSC00187.png'
-import imgLabSetup from '../../../assets/images/DSC00211.png'
+import imgSleepTracker from '../../../assets/images/adaptive-icon.png'
+import imgLabUser from '../../../assets/images/adaptive-icon.png'
+import imgLabSetup from '../../../assets/images/adaptive-icon.png'
 
 export default function introToSystem() {
     const [Loaded, SetLoaded] = React.useState(false);

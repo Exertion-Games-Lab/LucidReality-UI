@@ -16,6 +16,10 @@ import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import YoutubePlayer from 'react-native-youtube-iframe';
 
 import VideoCard from '../../../components/videoCard';
+import { Dimensions } from 'react-native';
+
+const screenWidth = Dimensions.get('window').width;
+const dynamicWidth = screenWidth * 0.9;
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
@@ -33,12 +37,14 @@ export default function videoGuideHeadset() {
                     <Text status='success' style={stylesScreen.boldText} category='p2'>Now please put on the headband</Text>
                 </Layout>
                 <Layout style={styles.container}>
-                    <VideoCard
-                        title="Step 1: Wear the headset"
-                        excerpt="Please closely follow the electrode placements shown in the video."
-                    >
-                        <YoutubePlayer height={300} width={400} play={false} videoId={'DRGktMG2MhI'} />
-                    </VideoCard>
+                <VideoCard
+                    title="Step 1: Wear the headset"
+                    excerpt="Please closely follow the electrode placements shown in the video."
+                >
+                    <YoutubePlayer height={300}  play={false} videoId={'DRGktMG2MhI'} />
+                </VideoCard>
+                </Layout>
+                <Layout style={styles.container}>
                     <ScrollView>
                         <Card style={styles.card}>
                             <Text category='label'>Step 2</Text>

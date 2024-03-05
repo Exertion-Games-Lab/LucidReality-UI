@@ -20,8 +20,6 @@ export default function lucidDream() {
     //const { apiVariables, setAPIVariables } = useAPIVariables();
     const [modalVisible, setModalVisible] = useState(false);
     const [remTimes, setRemTimes] = useState<string[]>([]);
-
-    const [commandCount, setCommandCount] = useState(0)
     const [apiVariables, setApiVariables] = useState<APIVariables>(defaultValues);
     const [remState, setRemState] = useState('Checking connection...');
     const [connectionStatus, setConnectionStatus] = useState('Checking connection...');
