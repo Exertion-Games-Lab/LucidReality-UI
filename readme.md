@@ -1,14 +1,14 @@
 # LucidReality
 This app is built using React-Native with Expo Go.
 
-**Folder layout:
+**Folder layout:**
 - **app Folder:
 	- This is the main folder with all the screens.
 	- As per expo navigation, you can find a folder for each tab which inside contains all the screens that are relevant for the tab. You can tell it is a tab because the name is enclosed in brackets. Eg. (connect), (home), (journal)
 	- The index.tsx file in each tab folder is the primary screen. 
 	- Please refer to expo docs to learn more about how  _layout.tsx_ works, which is what is responsible for navigation within each tab/stack/other
 		- https://docs.expo.dev/router/layouts/
-- **APICalls Folder
+- **APICalls Folder**
 	- **commandSender.tsx** - Eventually refractor cognitiveTraining.tsx, lucidDream.tsx and nap.tsx to use functions from this file instead of within their own screens for maintainability.
 	- **storage.tsx** - responsible for storing all variables needed to make calls to the server. Any updates from any other screens to the variables should be done using the saveAPIVariables function.
 	```typescript
@@ -24,10 +24,10 @@ This app is built using React-Native with Expo Go.
 					gvsCommandNo: number; }
 	```
 
-- **assets Folder
+- **assets Folder**
 	- **audio.tsx** - includes all the audio required for the app, this includes the AI generated recordings for each overnight screen
 	- **images.tsx** - includes all images required by the app
-- **constants Folder
+- **constants Folder**
 	- **Style.tsx** - All shared styles in here. Screens make use of stylesheets within their own screen files or they may use shared components from this file. Things like cards, containers etc. can be found here
 
 **Stack layout (Navigation):**
