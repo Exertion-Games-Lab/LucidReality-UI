@@ -1,7 +1,7 @@
 # LucidReality
 This app is built using React-Native with Expo Go.
 
-#Most Up-to-Date APK (16/04/2024)
+# Most Up-to-Date APK (16/04/2024)
 https://drive.google.com/file/d/1e1lXrTJhwLFHaqAUx6c1uNlxqkVA_Z15/view?usp=drive_link
 
 **Folder layout:**
