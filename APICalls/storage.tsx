@@ -6,6 +6,7 @@ export interface APIVariables {
     port: number;
     ledValue: number;
     soundValue: number;
+    gvsIntensity: number;
     vrGame: string;
     deviceType: 'portable' | 'lab';
     ledCommandNo: number;
@@ -18,6 +19,7 @@ export const defaultValues: APIVariables = {
     port: 8080,
     ledValue: 20,
     soundValue: 20,
+    gvsIntensity: 100,
     vrGame: 'Subnautica',
     deviceType: 'lab',
     ledCommandNo: 1,

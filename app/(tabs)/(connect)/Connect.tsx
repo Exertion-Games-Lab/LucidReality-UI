@@ -11,17 +11,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { APIVariables, defaultValues, loadAPIVariables, saveAPIVariables } from '../../../APICalls/storage';
 import GlobalEventEmitter from '../../../APICalls/EventEmitter';
 import { KeyboardAvoidingView, Platform } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 
 
 function ConnectInner() {
   const [apiVariables, setApiVariables] = useState<APIVariables>(defaultValues);
   const [sliderValueLED, setSliderValueLED] = useState<number>(apiVariables.ledValue);
   const [sliderValueSound, setSliderValueSound] = useState(apiVariables.soundValue);
+  const [sliderValueGVS, setSliderValueGVS] = useState(apiVariables.gvsIntensity);
   const [baseURL, setBaseURL] = useState<string>(apiVariables.baseURL);
   const [visible, setVisible] = React.useState(false);
   const [port, setPort] = useState<string>('8080');
   const [isVisualStimulusLoading, setIsVisualStimulusLoading] = useState(false);
   const [isAudioStimulusLoading, setIsAudioStimulusLoading] = useState(false);
+  const [isGVSStimulusLoading, setIsGVSStimulusLoading] = useState(false);
   const [deviceTypeIndex, setDeviceTypeIndex] = useState(apiVariables.deviceType === 'lab' ? 0 : 1); // Index for UI Kitten RadioGroup
 
   //Where we post to server after getting the base IP and port
@@ -33,6 +36,7 @@ function ConnectInner() {
       setApiVariables(vars);
       setSliderValueLED(vars.ledValue);
       setSliderValueSound(vars.soundValue);
+      setSliderValueGVS(vars.gvsIntensity)
       setBaseURL(vars.baseURL);
       setDeviceTypeIndex(vars.deviceType === 'lab' ? 0 : 1);
     };
@@ -40,7 +44,7 @@ function ConnectInner() {
   }, []);
 
   const handleSaveChanges = async () => {
-    const updatedVariables = { ...apiVariables, ledValue: sliderValueLED, soundValue: sliderValueSound, baseURL };
+    const updatedVariables = { ...apiVariables, ledValue: sliderValueLED, soundValue: sliderValueSound, baseURL, gvsIntensity: sliderValueGVS };
     await saveAPIVariables(updatedVariables);
     Alert.alert("Success", "API variables saved.");
     GlobalEventEmitter.emit('variablesUpdated');
@@ -62,6 +66,7 @@ function ConnectInner() {
       port: apiVariables.port,
       ledValue: sliderValueLED,
       soundValue: sliderValueSound,
+      gvsIntensity: sliderValueGVS,
       vrGame: apiVariables.vrGame,
     };
 
@@ -83,6 +88,14 @@ function ConnectInner() {
   const handleSoundValueChange = async (value: number) => {
     const updatedVariables = { ...apiVariables, soundValue: value };
     setSliderValueSound(value); // Update slider value
+    await saveAPIVariables(updatedVariables); // Save updated variables to AsyncStorage
+    setApiVariables(updatedVariables); // Update state
+  };
+
+  //GVS VALUE CHANGE
+  const handleGVSValueChange = async (value: number) => {
+    const updatedVariables = { ...apiVariables, gvsIntensity: value };
+    setSliderValueGVS(value); // Update slider value
     await saveAPIVariables(updatedVariables); // Save updated variables to AsyncStorage
     setApiVariables(updatedVariables); // Update state
   };
@@ -142,10 +155,36 @@ function ConnectInner() {
     }
   };
 
+  //SEND GVS COMMAND TO SERVER
+  const sendGVSStimulus = async () => {
+    setIsGVSStimulusLoading(true); // Show spinner
+    try {
+      const payload = {
+        millis: 1000,
+        intensity: apiVariables.gvsIntensity
+      };
+
+      await axios.post(`${postURL}/command/` + apiVariables.gvsCommandNo + `/GVS_Stimulus`, payload, {
+        timeout: 5000 // 5 seconds timeout
+      });
+      console.log('GVS Stimulus sent. Intensity: ' + payload.intensity);
+    } catch (error) {
+      console.error('Error sending GVS stimulus:', error);
+      Alert.alert(
+        "Error",
+        "Failed to send GVS stimulus. Please check your IP address and try again.",
+        [{ text: "OK" }]
+      );
+    } finally {
+      setIsGVSStimulusLoading(false); // Hide spinner regardless of the outcome
+    }
+  };
+
 
 
   return (
     <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
+      <ScrollView>
       <Layout style={styles.container}>
         <Text category='h2'>Connect & Calibrate</Text>
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
@@ -260,11 +299,43 @@ function ConnectInner() {
           </Button>
         )}
 
+        <Text category='h6'>GVS Intensity</Text>
+        <Text category='c1'>{apiVariables.gvsIntensity}</Text>
+        <Slider
+          style={{ width: 250, height: 40 }}
+          minimumValue={0}
+          maximumValue={255}
+          minimumTrackTintColor="#FFFFFF"
+          maximumTrackTintColor="#000000"
+          value={apiVariables.gvsIntensity}
+          onValueChange={value => handleGVSValueChange(value)}
+          step={5}
+          onSlidingComplete={() => console.log("Sliding complete" + { sliderValueGVS })}
+        />
+
+        {isGVSStimulusLoading ? (
+          <Layout style={stylesScreen.spinnerContainer}>
+            <Text category='label' status='primary' style={stylesScreen.label}>Sending command...</Text>
+            <Spinner size='small' />
+          </Layout>
+        ) : (
+          <Button
+            style={styles.button}
+            onPress={sendGVSStimulus}
+            disabled={isGVSStimulusLoading}
+          >
+            Test GVS Stimulus
+          </Button>
+        )}
+
+      
         <Text category='label' status='danger'>Please save before exiting the screen!</Text>
         <Button status='danger' style={styles.button} onPress={handleSaveChanges}>
           <Text style={styles.buttonText}>SAVE CHANGES</Text>
         </Button>
+
       </Layout>
+      </ScrollView>
     </ApplicationProvider>
   );
 }

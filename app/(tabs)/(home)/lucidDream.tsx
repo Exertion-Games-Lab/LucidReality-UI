@@ -25,19 +25,6 @@ export default function lucidDream() {
     const [connectionStatus, setConnectionStatus] = useState('Checking connection...');
     const [isLoading, setIsLoading] = useState(true);
     const [sessionActive, setSessionActive] = useState(false);
-    const payloadAudio = {
-        filename: "THETA.mp3",
-        volume: apiVariables.soundValue,
-        duration: 10000
-    };
-    const payloadLED = {
-        brightness: apiVariables.ledValue,
-        colour: {
-            r: 255,
-            g: 0,
-            b: 0,
-        },
-    }
 
     const postURL = apiVariables.baseURL + ':' + apiVariables.port
     const intervalIdRef = useRef<NodeJS.Timeout | number | null>(null);
@@ -129,11 +116,31 @@ export default function lucidDream() {
         if (remState === 'REM_PERIOD' && sessionActive) {
             console.log("REM_PERIOD detected, sending commands...");
             try {
+                const payloadAudio = {
+                    filename: "THETA.mp3",
+                    volume: apiVariables.soundValue,
+                    duration: 10000
+                };
+                const payloadLED = {
+                    brightness: apiVariables.ledValue,
+                    colour: {
+                        r: 255,
+                        g: 0,
+                        b: 0,
+                    },
+                }
+                const payloadGVS = {
+                    millis: 1000,
+                    intensity: apiVariables.gvsIntensity
+                }
+
                 await axios.post(`${postURL}/command/${apiVariables.audioCommandNo}/Audio`, payloadAudio, { timeout: 5000 });
                 console.log('Audio command sent successfully.');
                 await axios.post(`${postURL}/command/${apiVariables.ledCommandNo}/VisualStimulus`, payloadLED, { timeout: 5000 });
                 console.log('Visual stimulus sent successfully.');
-                await axios.post(`${postURL}/command/${apiVariables.gvsCommandNo}/GVSStimulus`, {});
+                await axios.post(`${postURL}/command/${apiVariables.gvsCommandNo}/GVS_Stimulus`, payloadGVS, {
+                    timeout: 5000 // 5 seconds timeout
+                  });
                 console.log('GVS stimulus sent successfully.');
                 console.log('Commands sent successfully.');
             } catch (error) {
