@@ -66,8 +66,7 @@ export default function lucidDream() {
 
     const checkREMState = () => {
         // Implementation of REM state checking logic
-        const url = 'http://127.0.0.1:5000/get_rem';
-
+        const url = `${apiVariables.baseURL}:5050/get_rem`; //flask server runs on port 5050 and main server on port 8080
         // Make a GET request to the endpoint
         fetch(url)
             .then(response => {
