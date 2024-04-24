@@ -84,7 +84,7 @@ export default function cognitiveTraining() {
     useEffect(() => {
         if (isSending) {
             sendCommands(); // Send immediately
-            const intervalId = setInterval(sendCommands, 11000); // Then every 11 seconds
+            const intervalId = setInterval(sendCommands, 20000); // Then every 11 seconds
 
             return () => clearInterval(intervalId);
         }

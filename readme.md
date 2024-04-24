@@ -47,6 +47,7 @@ npm install
 npx expo start
 ```
 - Scan the generated QR code from the EXPO GO app
+- If the authentication is wrong, delete the "eas" in app.json
 
 **To build an apk:**
 - First configure EAS file by following this link: https://docs.expo.dev/build/setup/
