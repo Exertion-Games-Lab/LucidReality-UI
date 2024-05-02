@@ -59,15 +59,24 @@ export default function cognitiveTraining() {
             brightness: apiVariables.ledValue,
             colour: { r: 255, g: 0, b: 0 },
         };
+        const payloadGVS = {
+            millis: 10000,
+            intensity: apiVariables.gvsIntensity
+        }
         const postURL = `${apiVariables.baseURL}:${apiVariables.port}`;
 
         const audioCommandPromise = axios.post(`${postURL}/command/${apiVariables.audioCommandNo}/Audio`, payloadAudio);
         const ledCommandPromise = axios.post(`${postURL}/command/${apiVariables.ledCommandNo}/VisualStimulus`, payloadLED);
+        const GVSCommandPromise = axios.post(`${postURL}/command/${apiVariables.gvsCommandNo}/GVS_Stimulus`, payloadGVS, {
+            timeout: 5000 // 5 seconds timeout
+          });
+    
 
-        Promise.all([audioCommandPromise, ledCommandPromise])
+        Promise.all([audioCommandPromise, ledCommandPromise, GVSCommandPromise])
             .then(([audioResponse, ledResponse]) => {
                 console.log('Audio command sent');
                 console.log('LED command sent');
+                console.log('GVS command sent sent.');
             })
             .catch((error) => {
                 // Log and alert the error. Stop sending stimuli too
