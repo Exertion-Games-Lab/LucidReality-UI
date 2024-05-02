@@ -59,9 +59,21 @@ export default function lucidDream() {
     }, [sessionActive]);
 
     useEffect(() => {
+
+        let intervalId: NodeJS.Timeout | undefined; // Declare variable to store interval ID
         if (remState === 'REM_PERIOD') {
-            sendCommands();
+            // sendCommands();
+            intervalId = setInterval(() => {
+                // Code to execute periodically
+                // sendCommands();
+                sendCommands();
+            }, 5000); // Interval time in milliseconds
+            
+            //using interval here
         }
+        return () => clearInterval(intervalId);
+        //else if not REM, clearinterval
+        //if session deactive, clear interval
     }, [remState, sessionActive]);
 
     const checkREMState = () => {
@@ -131,7 +143,7 @@ export default function lucidDream() {
                     },
                 }
                 const payloadGVS = {
-                    millis: 1000,
+                    millis: 10000,
                     intensity: apiVariables.gvsIntensity
                 }
 
