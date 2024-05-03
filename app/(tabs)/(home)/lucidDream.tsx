@@ -67,7 +67,7 @@ export default function lucidDream() {
                 // Code to execute periodically
                 // sendCommands();
                 sendCommands();
-            }, 5000); // Interval time in milliseconds
+            }, 20000); // Interval time in milliseconds
             
             //using interval here
         }
