@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { loadAPIVariables, APIVariables, defaultValues } from '../../../APICalls/storage';
 import GlobalEventEmitter from '../../../APICalls/EventEmitter';
+import { useFocusEffect } from '@react-navigation/native';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
@@ -93,11 +94,20 @@ export default function cognitiveTraining() {
     useEffect(() => {
         if (isSending) {
             sendCommands(); // Send immediately
-            const intervalId = setInterval(sendCommands, 20000); // Then every 11 seconds
+            const intervalId = setInterval(sendCommands, 20000); // Then every 20 seconds
 
             return () => clearInterval(intervalId);
         }
     }, [isSending, apiVariables]);
+
+    useFocusEffect(() => {
+        // Stop stimuli when the screen is unfocused
+        return () => {
+            if (isSending) {
+                toggleSending();
+            }
+        };
+    });
 
     const toggleSending = () => setIsSending(!isSending);
 
