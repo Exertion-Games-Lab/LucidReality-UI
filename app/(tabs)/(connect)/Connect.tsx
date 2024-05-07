@@ -343,7 +343,7 @@ function ConnectInner() {
           </Button>
         )}
 
-        <Text category='h6'>TACS Intensity</Text>
+        <Text category='h6'>tACS Intensity</Text>
         <Text category='c1'>{apiVariables.tacsIntensity}</Text>
         <Slider
           style={{ width: 250, height: 40 }}
@@ -357,7 +357,7 @@ function ConnectInner() {
           onSlidingComplete={() => console.log("Sliding complete" + { sliderValueTACSIntensity })}
         />
 
-        <Text category='h6'>TACS Frequency</Text>
+        <Text category='h6'>tACS Frequency</Text>
         <Text category='c1'>{apiVariables.tacsFrequency}</Text>
         <Slider
             style={{ width: 250, height: 40 }}
