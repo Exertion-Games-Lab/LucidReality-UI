@@ -6,12 +6,13 @@ export interface APIVariables {
     port: number;
     ledValue: number;
     soundValue: number;
-    gvsIntensity: number;
+    tacsIntensity: number;
+    tacsFrequency: number;
     vrGame: string;
     deviceType: 'portable' | 'lab';
     ledCommandNo: number;
     audioCommandNo: number;
-    gvsCommandNo: number;
+    tacsCommandNo: number;
 }
 
 export const defaultValues: APIVariables = {
@@ -19,12 +20,13 @@ export const defaultValues: APIVariables = {
     port: 8080,
     ledValue: 20,
     soundValue: 20,
-    gvsIntensity: 100,
+    tacsIntensity: 100,
+    tacsFrequency: 40,
     vrGame: 'Subnautica',
     deviceType: 'lab',
     ledCommandNo: 1,
     audioCommandNo: 2,
-    gvsCommandNo: 4,
+    tacsCommandNo: 4,
 };
 
 // AsyncStorage functions

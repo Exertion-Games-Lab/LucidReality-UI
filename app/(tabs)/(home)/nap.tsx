@@ -128,19 +128,20 @@ export default function lucidDream() {
                         b: 0,
                     },
                 }
-                const payloadGVS = {
+                const payloadTACS = {
                     millis: 1000,
-                    intensity: apiVariables.gvsIntensity
+                    intensity: apiVariables.tacsIntensity,
+                    frequency: apiVariables.tacsFrequency
                 }
 
                 await axios.post(`${postURL}/command/${apiVariables.audioCommandNo}/Audio`, payloadAudio, { timeout: 5000 });
                 console.log('Audio command sent successfully.');
                 await axios.post(`${postURL}/command/${apiVariables.ledCommandNo}/VisualStimulus`, payloadLED, { timeout: 5000 });
                 console.log('Visual stimulus sent successfully.');
-                await axios.post(`${postURL}/command/${apiVariables.gvsCommandNo}/GVS_Stimulus`, payloadGVS, {
+                await axios.post(`${postURL}/command/${apiVariables.tacsCommandNo}/GVS_Stimulus`, payloadTACS, {
                     timeout: 5000 // 5 seconds timeout
                   });
-                console.log('GVS stimulus sent successfully.');
+                console.log('TACS stimulus sent successfully.');
                 console.log('Commands sent successfully.');
             } catch (error) {
                 console.error('Error sending commands:', error);

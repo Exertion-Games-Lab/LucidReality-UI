@@ -18,13 +18,15 @@ function ConnectInner() {
   const [apiVariables, setApiVariables] = useState<APIVariables>(defaultValues);
   const [sliderValueLED, setSliderValueLED] = useState<number>(apiVariables.ledValue);
   const [sliderValueSound, setSliderValueSound] = useState(apiVariables.soundValue);
-  const [sliderValueGVS, setSliderValueGVS] = useState(apiVariables.gvsIntensity);
+  const [sliderValueTACSIntensity, setSliderValueTACSIntensity] = useState(apiVariables.tacsIntensity);
+  const [sliderValueTACSFrequency, setSliderValueTACSFrequency] = useState(apiVariables.tacsFrequency);
   const [baseURL, setBaseURL] = useState<string>(apiVariables.baseURL);
   const [visible, setVisible] = React.useState(false);
   const [port, setPort] = useState<string>('8080');
   const [isVisualStimulusLoading, setIsVisualStimulusLoading] = useState(false);
   const [isAudioStimulusLoading, setIsAudioStimulusLoading] = useState(false);
-  const [isGVSStimulusLoading, setIsGVSStimulusLoading] = useState(false);
+  const [isTACSIntensityStimulusLoading, setIsTACSIntensityStimulusLoading] = useState(false);
+  const [isTACSFrequencyStimulusLoading, setIsTACSFrequencyStimulusLoading] = useState(false);
   const [deviceTypeIndex, setDeviceTypeIndex] = useState(apiVariables.deviceType === 'lab' ? 0 : 1); // Index for UI Kitten RadioGroup
 
   //Where we post to server after getting the base IP and port
@@ -36,7 +38,9 @@ function ConnectInner() {
       setApiVariables(vars);
       setSliderValueLED(vars.ledValue);
       setSliderValueSound(vars.soundValue);
-      setSliderValueGVS(vars.gvsIntensity)
+      console.log(vars.tacsIntensity);
+      setSliderValueTACSIntensity(vars.tacsIntensity);
+      setSliderValueTACSFrequency(vars.tacsFrequency);
       setBaseURL(vars.baseURL);
       setDeviceTypeIndex(vars.deviceType === 'lab' ? 0 : 1);
     };
@@ -44,7 +48,7 @@ function ConnectInner() {
   }, []);
 
   const handleSaveChanges = async () => {
-    const updatedVariables = { ...apiVariables, ledValue: sliderValueLED, soundValue: sliderValueSound, baseURL, gvsIntensity: sliderValueGVS };
+    const updatedVariables = { ...apiVariables, ledValue: sliderValueLED, soundValue: sliderValueSound, baseURL, tacsIntensity: sliderValueTACSIntensity, tacsFrequency: sliderValueTACSFrequency};
     await saveAPIVariables(updatedVariables);
     Alert.alert("Success", "API variables saved.");
     GlobalEventEmitter.emit('variablesUpdated');
@@ -60,13 +64,14 @@ function ConnectInner() {
       deviceType,
       ledCommandNo: deviceType === 'lab' ? 1 : 2,
       audioCommandNo: deviceType === 'lab' ? 2 : 3,
-      gvsCommandNo: deviceType === 'lab' ? 4 : 5,
+      tacsCommandNo: deviceType === 'lab' ? 4 : 5,
       // Other properties remain unchanged
       baseURL: apiVariables.baseURL,
       port: apiVariables.port,
       ledValue: sliderValueLED,
       soundValue: sliderValueSound,
-      gvsIntensity: sliderValueGVS,
+      tacsIntensity: sliderValueTACSIntensity,
+      tacsFrequency: sliderValueTACSFrequency,
       vrGame: apiVariables.vrGame,
     };
 
@@ -92,10 +97,18 @@ function ConnectInner() {
     setApiVariables(updatedVariables); // Update state
   };
 
-  //GVS VALUE CHANGE
-  const handleGVSValueChange = async (value: number) => {
-    const updatedVariables = { ...apiVariables, gvsIntensity: value };
-    setSliderValueGVS(value); // Update slider value
+  //TACS INTENSITY VALUE CHANGE
+  const handleTACSIntensityValueChange = async (value: number) => {
+    const updatedVariables = { ...apiVariables, tacsIntensity: value };
+    setSliderValueTACSIntensity(value); // Update slider value
+    await saveAPIVariables(updatedVariables); // Save updated variables to AsyncStorage
+    setApiVariables(updatedVariables); // Update state
+  };
+
+  //TACS FREQUENCY VALUE CHANGE
+  const handleTACSFrequencyValueChange = async (value: number) => {
+    const updatedVariables = { ...apiVariables, tacsFrequency: value };
+    setSliderValueTACSFrequency(value); // Update slider value
     await saveAPIVariables(updatedVariables); // Save updated variables to AsyncStorage
     setApiVariables(updatedVariables); // Update state
   };
@@ -155,30 +168,61 @@ function ConnectInner() {
     }
   };
 
-  //SEND GVS COMMAND TO SERVER
-  const sendGVSStimulus = async () => {
-    setIsGVSStimulusLoading(true); // Show spinner
+  //SEND TACS INTENSITY COMMAND TO SERVER
+  const sendTACSIntensityStimulus = async () => {
+    setIsTACSIntensityStimulusLoading(true); // Show spinner
     try {
       const payload = {
         millis: 1000,
-        intensity: apiVariables.gvsIntensity
+        intensity: apiVariables.tacsIntensity
       };
 
-      await axios.post(`${postURL}/command/` + apiVariables.gvsCommandNo + `/GVS_Stimulus`, payload, {
+      await axios.post(`${postURL}/command/` + apiVariables.tacsCommandNo + `/GVS_Stimulus`, payload, {
         timeout: 5000 // 5 seconds timeout
       });
-      console.log('GVS Stimulus sent. Intensity: ' + payload.intensity);
+      console.log('TACS Intensity Stimulus sent. Intensity: ' + payload.intensity);
     } catch (error) {
-      console.error('Error sending GVS stimulus:', error);
+      console.error('Error sending TACS Intensity stimulus:', error);
       Alert.alert(
         "Error",
-        "Failed to send GVS stimulus. Please check your IP address and try again.",
+        "Failed to send TACS Intensity stimulus. Please check your IP address and try again.",
         [{ text: "OK" }]
       );
     } finally {
-      setIsGVSStimulusLoading(false); // Hide spinner regardless of the outcome
+      setIsTACSIntensityStimulusLoading(false); // Hide spinner regardless of the outcome
     }
   };
+
+  //SEND TACS COMMAND TO SERVER
+  const sendTACSFrequencyStimulus = async () => {
+    setIsTACSFrequencyStimulusLoading(true); // Show spinner
+    try {
+      const payload = {
+        millis: 1000,
+        intensity: apiVariables.tacsFrequency
+      };
+
+      await axios.post(`${postURL}/command/` + apiVariables.tacsCommandNo + `/GVS_Stimulus`, payload, {
+        timeout: 5000 // 5 seconds timeout
+      });
+      console.log('TACS Intensity Stimulus sent. Intensity: ' + payload.intensity);
+    } catch (error) {
+      console.error('Error sending TACS Frequency stimulus:', error);
+      Alert.alert(
+          "Error",
+          "Failed to send TACS Frequency stimulus. Please check your IP address and try again.",
+          [{ text: "OK" }]
+      );
+    } finally {
+      setIsTACSFrequencyStimulusLoading(false); // Hide spinner regardless of the outcome
+    }
+  };
+
+  const testTACSStimuli = () => {
+    sendTACSIntensityStimulus();
+    sendTACSFrequencyStimulus();
+  }
+
 
 
 
@@ -299,21 +343,35 @@ function ConnectInner() {
           </Button>
         )}
 
-        <Text category='h6'>GVS Intensity</Text>
-        <Text category='c1'>{apiVariables.gvsIntensity}</Text>
+        <Text category='h6'>TACS Intensity</Text>
+        <Text category='c1'>{apiVariables.tacsIntensity}</Text>
         <Slider
           style={{ width: 250, height: 40 }}
           minimumValue={0}
           maximumValue={255}
           minimumTrackTintColor="#FFFFFF"
           maximumTrackTintColor="#000000"
-          value={apiVariables.gvsIntensity}
-          onValueChange={value => handleGVSValueChange(value)}
+          value={apiVariables.tacsIntensity}
+          onValueChange={value => handleTACSIntensityValueChange(value)}
           step={5}
-          onSlidingComplete={() => console.log("Sliding complete" + { sliderValueGVS })}
+          onSlidingComplete={() => console.log("Sliding complete" + { sliderValueTACSIntensity })}
         />
 
-        {isGVSStimulusLoading ? (
+        <Text category='h6'>TACS Frequency</Text>
+        <Text category='c1'>{apiVariables.tacsFrequency}</Text>
+        <Slider
+            style={{ width: 250, height: 40 }}
+            minimumValue={0}
+            maximumValue={255}
+            minimumTrackTintColor="#FFFFFF"
+            maximumTrackTintColor="#000000"
+            value={apiVariables.tacsFrequency}
+            onValueChange={value => handleTACSFrequencyValueChange(value)}
+            step={5}
+            onSlidingComplete={() => console.log("Sliding complete" + { sliderValueTACSFrequency })}
+        />
+
+        {isTACSIntensityStimulusLoading || isTACSFrequencyStimulusLoading ? (
           <Layout style={stylesScreen.spinnerContainer}>
             <Text category='label' status='primary' style={stylesScreen.label}>Sending command...</Text>
             <Spinner size='small' />
@@ -321,10 +379,10 @@ function ConnectInner() {
         ) : (
           <Button
             style={styles.button}
-            onPress={sendGVSStimulus}
-            disabled={isGVSStimulusLoading}
+            onPress={testTACSStimuli}
+            disabled={isTACSIntensityStimulusLoading || isTACSFrequencyStimulusLoading}
           >
-            Test GVS Stimulus
+            Test TACS Stimulus
           </Button>
         )}
 

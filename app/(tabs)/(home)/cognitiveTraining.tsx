@@ -59,24 +59,26 @@ export default function cognitiveTraining() {
             brightness: apiVariables.ledValue,
             colour: { r: 255, g: 0, b: 0 },
         };
-        const payloadGVS = {
+        const payloadTACS = {
             millis: 10000,
-            intensity: apiVariables.gvsIntensity
+            intensity: apiVariables.tacsIntensity,
+            frequency: apiVariables.tacsFrequency
         }
+
         const postURL = `${apiVariables.baseURL}:${apiVariables.port}`;
 
         const audioCommandPromise = axios.post(`${postURL}/command/${apiVariables.audioCommandNo}/Audio`, payloadAudio);
         const ledCommandPromise = axios.post(`${postURL}/command/${apiVariables.ledCommandNo}/VisualStimulus`, payloadLED);
-        const GVSCommandPromise = axios.post(`${postURL}/command/${apiVariables.gvsCommandNo}/GVS_Stimulus`, payloadGVS, {
+        const TACSCommandPromise = axios.post(`${postURL}/command/${apiVariables.tacsCommandNo}/GVS_Stimulus`, payloadTACS, {
             timeout: 5000 // 5 seconds timeout
           });
     
 
-        Promise.all([audioCommandPromise, ledCommandPromise, GVSCommandPromise])
+        Promise.all([audioCommandPromise, ledCommandPromise, TACSCommandPromise])
             .then(([audioResponse, ledResponse]) => {
                 console.log('Audio command sent');
                 console.log('LED command sent');
-                console.log('GVS command sent sent.');
+                console.log('TACS command sent');
             })
             .catch((error) => {
                 // Log and alert the error. Stop sending stimuli too
@@ -93,7 +95,7 @@ export default function cognitiveTraining() {
     useEffect(() => {
         if (isSending) {
             sendCommands(); // Send immediately
-            const intervalId = setInterval(sendCommands, 20000); // Then every 11 seconds
+            const intervalId = setInterval(sendCommands, 20000); // Then every 20 seconds
 
             return () => clearInterval(intervalId);
         }

@@ -24,7 +24,7 @@ This app is built using React-Native with Expo Go.
 					deviceType: 'portable' | 'lab'; 
 					ledCommandNo: number; 
 					audioCommandNo: number; 
-					gvsCommandNo: number; }
+					tacsCommandNo: number; }
 	```
 
 - **assets Folder**
