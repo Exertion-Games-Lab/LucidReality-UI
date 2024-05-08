@@ -100,22 +100,22 @@ export default function introToLD() {
             </Layout>
 
             <Card style={styles.card}>
-              <Text style={stylesScreen.titleCard} category='h6'>What is Lucid Dreaming?</Text>
+              <Text style={stylesScreen.titleCard} category='h6'>What is lucid dreaming?</Text>
               <Text category='p1'>Lucid Dreaming is when you realise you're dreaming while you're asleep. You know the stuff happening in your dream isn't real, but it feels super clear and lifelike. Sometimes, you can even steer the dream like you're the boss of a sleep movie. Studies say about half of people might have had a lucid dream at least once, but they usually don't happen a lot — just a few times a year for most people.</Text>
             </Card>
 
             <Card style={styles.card}>
-              <Text style={stylesScreen.titleCard} category='h6'>When do Lucid Dreams Happen?</Text>
+              <Text style={stylesScreen.titleCard} category='h6'>When do lucid dreams happen?</Text>
               <Text category='p1'>
                 Lucid dreams typically occur during rapid eye movement (REM) sleep, a phase of deep sleep characterized by eye movement, increased breathing, and heightened brain activity. REM sleep usually begins approximately 90 minutes after you fall asleep and lasts for about 10 minutes initially. Throughout the night, each subsequent REM period becomes longer, eventually extending up to an hour.</Text>
             </Card>
 
             <Card style={styles.card}>
-              <Text style={stylesScreen.titleCard} category='h6'>Benifits of lucid dreaming</Text>
+              <Text style={stylesScreen.titleCard} category='h6'>Benefits of lucid dreaming</Text>
               <Text category='p1'>Boosts Creativity: Lucid dreaming lets you get creative in your dreams, making it a fun space for imagination. {'\n'}</Text>
               <Text category='p1'>Facing Fears: You can use lucid dreaming to confront and conquer fears in a safe dream setting. {'\n'}</Text>
               <Text category='p1'>Problem-Solving Practice: Some people use lucid dreaming to practice problem-solving or rehearse real-life situations. {'\n'}</Text>
-              <Text category='p1'>Personal Growth: Lucid dreaming offers a chance for self-reflection and personal insights, helping you understand your thoughts and feelings better. {'\n'}</Text>
+              <Text category='p1'>Wish Fulfillment: If you have anything that you want to achieve, just do it in lucid dreaming! For example, people on a diet can still enjoy the sweets in lucid dreaming. {'\n'}</Text>
               <Text category='p1'>Entertainment: Lucid dreaming is like having your own personalized entertainment system, where you can enjoy unique and fantastical experiences. {'\n'}</Text>
 
             </Card>

@@ -105,14 +105,14 @@ export default function cognitiveTraining() {
         <>
             <IconRegistry icons={EvaIconsPack} />
             <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
-                <Stack.Screen options={{ headerTitle: 'Cognitive Training' }} />
+                <Stack.Screen options={{ headerTitle: 'Cognitive Training Session' }} />
                 <Layout style={styles.container}>
                     <ScrollView>
                         <Card style={styles.card}>
-                            <Text category='label' status='primary'>What do I do?</Text>
-                            <Text category='s1' style={stylesScreen.spacing}>Press start stimuli and get used to the stimuli and how it feels. </Text>
-                            <Text category='s1' style={stylesScreen.spacing}>Train yourself to do a 'reality check' when you experience the stimuli.</Text>
-                            <Text category='s1' style={stylesScreen.spacing}>The idea is you recognise the stimuli while dreaming to gain conciousness resulting in lucidity but not enough to make you wake up</Text>
+                            <Text category='label' status='primary'>What should I do?</Text>
+                            <Text category='s1' style={stylesScreen.spacing}>If you have not calibrated the intensity of the stimuli, please switch to “Get Started - Connect & Calibrate”. </Text>
+                            <Text category='s1' style={stylesScreen.spacing}>Please press “Start Stimuli” and familiarize yourself with the stimuli and their feelings.</Text>
+                            <Text category='s1' style={stylesScreen.spacing}>Close your eyes. Whenever recognizing the stimuli, please ask yourself whether you are dreaming. This associates your self-awareness with the stimuli. Please set up a timer (recommended time: 20 minutes) for this session. </Text>
                         </Card>
                         <Button onPress={toggleSending} status={isSending ? 'danger' : 'success'}>
                             {isSending ? 'Stop Stimuli' : 'Start Stimuli'}

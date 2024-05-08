@@ -115,14 +115,16 @@ export default function introToSystem() {
                             />
                         </Layout>
                         <Card style={styles.card}>
-                            <Text style={stylesScreen.titleCard} category='h6'>Our Approach</Text>
-                            <Text category='p1'>Our approach is based on the lucid dream technique 'Wake Back to Bed (WBTB)'. </Text>
+                            <Text style={stylesScreen.titleCard} category='h6'>Our approach</Text>
+                            <Text category='p1'>Our approach utilizes pre-sleep preparation and external stimuli during sleep to induce lucid dreams based on previous research. </Text>
                             <Text category='p1' style={stylesScreen.boldText}>Step 1 - SLEEP SESSION: </Text>
-                            <Text category='p1'>Sleep as you normally would at night, recommended for minimum 4 hours. </Text>
-                            <Text category='p1' style={stylesScreen.boldText}>Step 2 - PLAY VR & STAY AWAKE: </Text>
-                            <Text category='p1'>Spend up to half hour playing VR. This will aid in dreaming about your chosen VR topic.  </Text>
-                            <Text category='p1' style={stylesScreen.boldText}>Step 3 - LUCID DREAM: </Text>
-                            <Text category='p1'>Go back to bed and enjoy your lucid dream </Text>
+                            <Text category='p1'>Sleep as you normally would at night, recommended for a minimum of 4 hours. </Text>
+                            <Text category='p1' style={stylesScreen.boldText}>Step 2 - COGNITIVE TRAINING SESSION: </Text>
+                            <Text category='p1'>During this session, the stimuli will be activated to help associate your self-awareness with the stimuli. Please practice recognizing the stimuli and asking yourself whether you are in the dream whenever recognizing the stimuli.  </Text>
+                            <Text category='p1' style={stylesScreen.boldText}>Step 3 - LUCID DREAM SESSION: </Text>
+                            <Text category='p1'>After the cognitive training, please go back to sleep again. Once you enter in your dream, the stimuli would be actived. Please recognize the stimuli and ask yourself whether you are dreaming to induce lucid dreaming. After you notice that you are dreaming, please move your eyeballs left to right 8 times to notify the system. </Text>
+                            <Text category='p1' style={stylesScreen.boldText}>Step 4 - DREAM REPORT SESSION: </Text>
+                            <Text category='p1'>Whenever you wake up from the lucid dream session (no matter whether you have a lucid dream or not), please switch to the “Journal” page on the app and report your experience. After the dream report, please go back to step 3 until you cannot fall asleep anymore or 4 hours have lapsed for the lucid dream session. </Text>
                         </Card>
                         <Layout style={styles.container}>
                             <Text status='primary' category='s1'>Our system consists of 3 major components:</Text>
@@ -130,8 +132,8 @@ export default function introToSystem() {
 
                         <Card style={styles.card}>
                             <Text style={stylesScreen.boldText} category='h6'>Stimulus devices</Text>
-                            <Text category='p1'>Stimulus devices include any devices that will directly aid in helping lucidity. For example, in the most basic setup, LEDs and Speakers are both devices that help a user reach lucidity. Other devices such as TACs, EMS, bubbler can all provide extra help to achive lucidity and modify content.</Text>
-                            <Text category='p1'>{'\n'}For now this app only supports LED, Audio and TACs but additional support is coming</Text>
+                            <Text category='p1'>Stimulus devices include any devices that will directly aid in helping lucidity. The basic setup includes an LED, electrical stimulation, and a speaker. If you feel uncomfortable during the stimulation, please press the emergency button and inform the researchers to stop the study. After pressing, please rotate the button clockwise for the usage next time.</Text>
+                            {/* <Text category='p1'>{'\n'}For now this app only supports LED, Audio and TACs but additional support is coming</Text> */}
                         </Card>
 
                         {
@@ -142,9 +144,9 @@ export default function introToSystem() {
                         </Layout>
 
                         <Card style={styles.card}>
-                            <Text style={stylesScreen.boldText} category='h6'>Sleep Tracker</Text>
-                            <Text category='p1'>The sleep tracker is responsible for collecting EEG data (for sleep processing) and EOG (to detect eye movement) when you are sleeping.</Text>
-                            <Text category='p1'>{'\n'}Using this data our algorithm detects REM stages and activates stimulus accordingly</Text>
+                            <Text style={stylesScreen.boldText} category='h6'>Sleep tracker</Text>
+                            <Text category='p1'>The sleep tracker captures your brain and eye activity during sleep and detects your sleep stage automatically.</Text>
+                            {/* <Text category='p1'>{'\n'}Using this data our algorithm detects REM stages and activates stimulus accordingly</Text> */}
                         </Card>
 
                         {
@@ -156,8 +158,8 @@ export default function introToSystem() {
 
                         <Card style={styles.card}>
                             <Text style={stylesScreen.boldText} category='h6'>Server</Text>
-                            <Text category='p1'>Our server is the brains of our system. Informations is automatically sent from the sleep tracker to the server, where data is further processed and stimulus outputs are activated</Text>
-                            <Text category='p1'>{'\n'}It is important to ensure you are connected before starting a Lucid Dream session</Text>
+                            <Text category='p1'> Information is automatically sent from the sleep tracker to the server, where data is further processed, and stimulus outputs are activated.</Text>
+                            <Text category='p1'>{'\n'}It is important to ensure you are connected before starting the study.</Text>
                         </Card>
 
                         {
@@ -166,6 +168,40 @@ export default function introToSystem() {
                         <Layout style={styles.container}>
                             <Image style={stylesScreen.image} source={imgLabUser} />
                         </Layout>
+                        
+
+                        <Card style={styles.card}>
+                            <Text style={stylesScreen.boldText} category='h6'>How to set up the sleep tracker?</Text>
+                            <Text category='p1'> 1. Plug in the battery.</Text>
+                            <Text category='p1'>{'\n'}2. Turn the board into PC mode.</Text>
+                            <Text category='p1'>{'\n'}3. Put on the cap.</Text>
+                            <Text category='p1'>{'\n'}4. Adjust the tightness.</Text>
+                            <Text category='p1'>{'\n'}5. Put on the ear clip.</Text>
+                        </Card>
+
+                        <Card style={styles.card}>
+                            <Text style={stylesScreen.boldText} category='h6'>How to set up the server?</Text>
+                            <Text category='p1'> 1.	Plug in the power.</Text>
+                            <Text category='p1'>{'\n'}2. Connect the server with a monitor.</Text>
+                            <Text category='p1'>{'\n'}3. Connect to the WIFI.</Text>
+                            <Text category='p1'>{'\n'}4. Open the terminal.</Text>
+                            <Text category='p1'>{'\n'}5. Enter “cd LuciEntry-Home”</Text>
+                            <Text category='p1'>{'\n'}6. Enter “python configure_wifi.py” and enter your WIFI password here.</Text>
+                            <Text category='p1'>{'\n'}7. Enter “./start.sh”</Text>
+                        </Card>
+
+                        <Card style={styles.card}>
+                            <Text style={stylesScreen.boldText} category='h6'>How to set up the stimulus devices?</Text>
+                            <Text category='p1'> 1.	On the server, open LuciEntry-Home/Devices/[Device-name] folder.</Text>
+                            <Text category='p1'>{'\n'}2. Open the [Device-name].ino with Arduino.</Text>
+                            <Text category='p1'>{'\n'}3. Open the box and unplug the USB cable from the battery.</Text>
+                            <Text category='p1'>{'\n'}4. Plug the USB cable into the server.</Text>
+                            <Text category='p1'>{'\n'}5. Select the port and “generic ESP 8266 Module” as the board.</Text>
+                            <Text category='p1'>{'\n'}6. Press “upload”.</Text>
+                            <Text category='p1'>{'\n'}7. Plug the USB cable back into the battery.</Text>
+                            <Text category='p1'>{'\n'}8. Power on the battery.</Text>
+                            {/* <Text category='p1'>{'\n'}For more instruction, please refer to our manual: README.</Text> */}
+                        </Card>
 
                     </ScrollView>
                     <Link href="/uninterruptedSleep" asChild>
