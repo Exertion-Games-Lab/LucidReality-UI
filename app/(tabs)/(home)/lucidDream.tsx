@@ -200,7 +200,7 @@ export default function lucidDream() {
                     </Card>
                 </Layout>
                 <Layout style={styles.container}>
-                    <Timer defaultHours={4} defaultMinutes={0} />
+                    <Timer defaultHours={4} defaultMinutes={0} isFocused={false}/>
 
                     <Link href="/lucidDream" asChild>
                         <Button onPress={sessionActive ? endSession : startSession} style={styles.button}>

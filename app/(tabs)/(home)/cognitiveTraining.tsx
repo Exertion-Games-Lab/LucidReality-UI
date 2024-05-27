@@ -1,16 +1,15 @@
 import { Link, Stack } from 'expo-router';
-import { Pressable, SafeAreaView, StyleSheet, ScrollView, Platform, Alert } from 'react-native';
+import { SafeAreaView, StyleSheet, ScrollView, Alert } from 'react-native';
 import styles from "../../../constants/Style";
-import { ApplicationProvider, Button, Text, Layout, Icon, IconElement, IconRegistry, Card } from '@ui-kitten/components';
+import { ApplicationProvider, Button, Text, Layout, Icon, IconRegistry, Card } from '@ui-kitten/components';
 import * as eva from '@eva-design/eva';
 import { default as theme } from "../../../theme.json";
-import Timer from '../../../components/Timer';
+import TimerWrapper from '../../../components/Timer';  // Import the TimerWrapper directly
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { loadAPIVariables, APIVariables, defaultValues } from '../../../APICalls/storage';
 import GlobalEventEmitter from '../../../APICalls/EventEmitter';
-import { useFocusEffect } from '@react-navigation/native';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
@@ -71,7 +70,7 @@ export default function cognitiveTraining() {
         const GVSCommandPromise = axios.post(`${postURL}/command/${apiVariables.gvsCommandNo}/GVS_Stimulus`, payloadGVS, {
             timeout: 5000 // 5 seconds timeout
           });
-    
+
 
         Promise.all([audioCommandPromise, ledCommandPromise, GVSCommandPromise])
             .then(([audioResponse, ledResponse]) => {
@@ -100,15 +99,6 @@ export default function cognitiveTraining() {
         }
     }, [isSending, apiVariables]);
 
-    useFocusEffect(() => {
-        // Stop stimuli when the screen is unfocused
-        return () => {
-            if (isSending) {
-                toggleSending();
-            }
-        };
-    });
-
     const toggleSending = () => setIsSending(!isSending);
 
     return (
@@ -127,7 +117,7 @@ export default function cognitiveTraining() {
                         <Button onPress={toggleSending} status={isSending ? 'danger' : 'success'}>
                             {isSending ? 'Stop Stimuli' : 'Start Stimuli'}
                         </Button>
-                        <Timer defaultHours={0} defaultMinutes={10} />
+                        <TimerWrapper defaultHours={0} defaultMinutes={10} isFocused={false}/>
                     </ScrollView>
                 </Layout>
                 <Link href="/lucidDream" asChild>
