@@ -1,16 +1,14 @@
 import { StyleSheet, Alert, Dimensions } from 'react-native';
 import { View } from '../../../components/Themed';
 import styles from "../../../constants/Style"
-import { ApplicationProvider, Button, Divider, Layout, Text, Modal, Card, Input, Radio, RadioGroup, Spinner } from '@ui-kitten/components';
+import { ApplicationProvider, Button, Layout, Text, Modal, Card, Input, Radio, RadioGroup, Spinner } from '@ui-kitten/components';
 import * as eva from '@eva-design/eva';
 import { default as theme } from "../../../theme.json";
 import Slider from '@react-native-community/slider';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { APIVariables, defaultValues, loadAPIVariables, saveAPIVariables } from '../../../APICalls/storage';
 import GlobalEventEmitter from '../../../APICalls/EventEmitter';
-import { KeyboardAvoidingView, Platform } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
 
@@ -169,62 +167,33 @@ function ConnectInner() {
   };
 
   //SEND TACS INTENSITY COMMAND TO SERVER
-  const sendTACSIntensityStimulus = async () => {
-    setIsTACSIntensityStimulusLoading(true); // Show spinner
+  const sendTACSStimulus = async () => {
+    setIsTACSIntensityStimulusLoading(true);
+    setIsTACSFrequencyStimulusLoading(true);// Show spinner
     try {
       const payload = {
         millis: 1000,
-        intensity: apiVariables.tacsIntensity
+        intensity: apiVariables.tacsIntensity,
+        frequency: apiVariables.tacsFrequency
       };
 
-      await axios.post(`${postURL}/command/` + apiVariables.tacsCommandNo + `/GVS_Stimulus`, payload, {
+      await axios.post(`${postURL}/command/` + apiVariables.tacsCommandNo + `/TACS_Stimulus`, payload, {
         timeout: 5000 // 5 seconds timeout
       });
-      console.log('TACS Intensity Stimulus sent. Intensity: ' + payload.intensity);
+      console.log('TACS Intensity and Frequency Stimulus sent. Intensity: ' + payload.intensity + ' and Frequency: ' + apiVariables.tacsFrequency);
     } catch (error) {
-      console.error('Error sending TACS Intensity stimulus:', error);
+      console.error('Error sending TACS payload stimulus:', error);
       Alert.alert(
         "Error",
         "Failed to send TACS Intensity stimulus. Please check your IP address and try again.",
         [{ text: "OK" }]
       );
     } finally {
-      setIsTACSIntensityStimulusLoading(false); // Hide spinner regardless of the outcome
+      // Hide spinner regardless of the outcome
+      setIsTACSIntensityStimulusLoading(false);
+      setIsTACSFrequencyStimulusLoading(false);
     }
   };
-
-  //SEND TACS COMMAND TO SERVER
-  const sendTACSFrequencyStimulus = async () => {
-    setIsTACSFrequencyStimulusLoading(true); // Show spinner
-    try {
-      const payload = {
-        millis: 1000,
-        intensity: apiVariables.tacsFrequency
-      };
-
-      await axios.post(`${postURL}/command/` + apiVariables.tacsCommandNo + `/GVS_Stimulus`, payload, {
-        timeout: 5000 // 5 seconds timeout
-      });
-      console.log('TACS Intensity Stimulus sent. Intensity: ' + payload.intensity);
-    } catch (error) {
-      console.error('Error sending TACS Frequency stimulus:', error);
-      Alert.alert(
-          "Error",
-          "Failed to send TACS Frequency stimulus. Please check your IP address and try again.",
-          [{ text: "OK" }]
-      );
-    } finally {
-      setIsTACSFrequencyStimulusLoading(false); // Hide spinner regardless of the outcome
-    }
-  };
-
-  const testTACSStimuli = () => {
-    sendTACSIntensityStimulus();
-    sendTACSFrequencyStimulus();
-  }
-
-
-
 
   return (
     <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
@@ -379,7 +348,7 @@ function ConnectInner() {
         ) : (
           <Button
             style={styles.button}
-            onPress={testTACSStimuli}
+            onPress={sendTACSStimulus}
             disabled={isTACSIntensityStimulusLoading || isTACSFrequencyStimulusLoading}
           >
             Test TACS Stimulus

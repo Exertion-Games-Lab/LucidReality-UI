@@ -138,7 +138,7 @@ export default function lucidDream() {
                 console.log('Audio command sent successfully.');
                 await axios.post(`${postURL}/command/${apiVariables.ledCommandNo}/VisualStimulus`, payloadLED, { timeout: 5000 });
                 console.log('Visual stimulus sent successfully.');
-                await axios.post(`${postURL}/command/${apiVariables.tacsCommandNo}/GVS_Stimulus`, payloadTACS, {
+                await axios.post(`${postURL}/command/${apiVariables.tacsCommandNo}/TACS_Stimulus`, payloadTACS, {
                     timeout: 5000 // 5 seconds timeout
                   });
                 console.log('TACS stimulus sent successfully.');

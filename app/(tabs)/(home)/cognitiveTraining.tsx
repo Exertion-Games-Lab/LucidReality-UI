@@ -69,7 +69,7 @@ export default function cognitiveTraining() {
 
         const audioCommandPromise = axios.post(`${postURL}/command/${apiVariables.audioCommandNo}/Audio`, payloadAudio);
         const ledCommandPromise = axios.post(`${postURL}/command/${apiVariables.ledCommandNo}/VisualStimulus`, payloadLED);
-        const TACSCommandPromise = axios.post(`${postURL}/command/${apiVariables.tacsCommandNo}/GVS_Stimulus`, payloadTACS, {
+        const TACSCommandPromise = axios.post(`${postURL}/command/${apiVariables.tacsCommandNo}/TACS_Stimulus`, payloadTACS, {
             timeout: 5000 // 5 seconds timeout
           });
     
