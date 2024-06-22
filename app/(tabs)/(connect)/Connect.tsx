@@ -177,7 +177,7 @@ function ConnectInner() {
         frequency: apiVariables.tacsFrequency
       };
 
-      await axios.post(`${postURL}/command/` + apiVariables.tacsCommandNo + `/TACS_Stimulus`, payload, {
+      await axios.post(`${postURL}/command/` + apiVariables.tacsCommandNo + `/TacsStimulus`, payload, {
         timeout: 5000 // 5 seconds timeout
       });
       console.log('TACS Intensity and Frequency Stimulus sent. Intensity: ' + payload.intensity + ' and Frequency: ' + apiVariables.tacsFrequency);
@@ -351,7 +351,7 @@ function ConnectInner() {
             onPress={sendTACSStimulus}
             disabled={isTACSIntensityStimulusLoading || isTACSFrequencyStimulusLoading}
           >
-            Test TACS Stimulus
+            Test TAC Stimulus
           </Button>
         )}
 
