@@ -13,6 +13,7 @@ import { default as theme } from "../../../theme.json";
 import Timer from '../../../components/Timer';
 
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
+import TimerWrapper from '../../../components/Timer';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
@@ -28,11 +29,11 @@ export default function uninterruptedSleep() {
                     <Text status='success' style={stylesScreen.boldText} category='p2'>It's time to get some uninterrupted deep sleep first. {"\n"}We recommend at least 4 hours for the best results</Text>
                 </Layout>
                 <Layout style={styles.container}>
-                    <Timer defaultHours={4} defaultMinutes={0}/>
+                    <TimerWrapper defaultHours={4} defaultMinutes={0} isFocused={false}/>
                 </Layout>
-                <Link href="/playVR" asChild>
+                <Link href="/videoGuideHeadset" asChild>
                     <Button status='success' style={styles.buttonFixed} accessoryRight={arrow}>
-                        <Text>Play VR</Text>
+                        <Text>Headset</Text>
                     </Button>
                 </Link>
             </ApplicationProvider>

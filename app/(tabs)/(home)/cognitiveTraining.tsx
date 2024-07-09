@@ -1,10 +1,10 @@
 import { Link, Stack } from 'expo-router';
-import { SafeAreaView, StyleSheet, ScrollView, Alert } from 'react-native';
+import { Pressable, SafeAreaView, StyleSheet, ScrollView, Platform, Alert } from 'react-native';
 import styles from "../../../constants/Style";
-import { ApplicationProvider, Button, Text, Layout, Icon, IconRegistry, Card } from '@ui-kitten/components';
+import { ApplicationProvider, Button, Text, Layout, Icon, IconElement, IconRegistry, Card } from '@ui-kitten/components';
 import * as eva from '@eva-design/eva';
 import { default as theme } from "../../../theme.json";
-import TimerWrapper from '../../../components/Timer';  // Import the TimerWrapper directly
+import Timer from '../../../components/ConsistentTimer';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
@@ -117,7 +117,7 @@ export default function cognitiveTraining() {
                         <Button onPress={toggleSending} status={isSending ? 'danger' : 'success'}>
                             {isSending ? 'Stop Stimuli' : 'Start Stimuli'}
                         </Button>
-                        <TimerWrapper defaultHours={0} defaultMinutes={10} isFocused={false}/>
+                        <Timer defaultHours={0} defaultMinutes={10}/>
                     </ScrollView>
                 </Layout>
                 <Link href="/lucidDream" asChild>
