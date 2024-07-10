@@ -5,7 +5,8 @@ import styles from "../../../constants/Style";
 import { ApplicationProvider, Button, Text, Layout, Icon, IconElement, IconRegistry, Card, Spinner, Modal } from '@ui-kitten/components';
 import * as eva from '@eva-design/eva';
 import { default as theme } from "../../../theme.json";
-import Timer from '../../../components/Timer';
+import PersistentTimer from '../../../components/PersistentTimer';
+import TimerWrapper from '../../../components/Timer';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import { AntDesign } from '@expo/vector-icons';
 import axios from 'axios';
@@ -200,7 +201,7 @@ export default function lucidDream() {
                     </Card>
                 </Layout>
                 <Layout style={styles.container}>
-                    <Timer defaultHours={4} defaultMinutes={0} isFocused={false}/>
+                    <PersistentTimer defaultHours={1} defaultMinutes={0} />
 
                     <Link href="/lucidDream" asChild>
                         <Button onPress={sessionActive ? endSession : startSession} style={styles.button}>

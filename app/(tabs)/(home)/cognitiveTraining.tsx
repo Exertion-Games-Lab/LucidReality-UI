@@ -4,12 +4,12 @@ import styles from "../../../constants/Style";
 import { ApplicationProvider, Button, Text, Layout, Icon, IconElement, IconRegistry, Card } from '@ui-kitten/components';
 import * as eva from '@eva-design/eva';
 import { default as theme } from "../../../theme.json";
-import Timer from '../../../components/ConsistentTimer';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { loadAPIVariables, APIVariables, defaultValues } from '../../../APICalls/storage';
 import GlobalEventEmitter from '../../../APICalls/EventEmitter';
+import TimerWrapper from '../../../components/Timer';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
@@ -117,7 +117,7 @@ export default function cognitiveTraining() {
                         <Button onPress={toggleSending} status={isSending ? 'danger' : 'success'}>
                             {isSending ? 'Stop Stimuli' : 'Start Stimuli'}
                         </Button>
-                        <Timer defaultHours={0} defaultMinutes={10}/>
+                        <TimerWrapper defaultHours={0} defaultMinutes={10} isFocused={false}/>
                     </ScrollView>
                 </Layout>
                 <Link href="/lucidDream" asChild>
