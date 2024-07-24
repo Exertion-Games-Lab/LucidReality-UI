@@ -174,6 +174,8 @@ export default function lucidDream() {
         setModalVisible(true);
     };
 
+
+
     return (
         <>
             <IconRegistry icons={EvaIconsPack} />
@@ -222,65 +224,12 @@ export default function lucidDream() {
                                 Close
                             </Button>
                         </Card>
-                        {/* <Text status='success' style={stylesScreen.boldText} category='p2'>Recommended minimum 2 hours to ensure REM is reached</Text> */}
-                    
-                    
-                        <Layout>
-                        <Card style={styles.card}>
-                            <Layout style={stylesScreen.row}>
-                                <Text style={stylesScreen.text} category='s1'>Connection Status: {connectionStatus}</Text>
-                                {!isLoading && <AntDesign name="checkcircle" size={24} color="white" />}
-                                {isLoading && <Spinner size='small' />}
-                            </Layout>
-                        </Card>
-                        <Card style={styles.card}>
-                            <Layout style={stylesScreen.row}>
-                                <Text style={stylesScreen.text} category='s1'>REM State: {remState}</Text>
-                                {!isLoading && <AntDesign name="checkcircle" size={24} color="white" />}
-                                {isLoading && <Spinner size='small' />}
-                            </Layout>
-                        </Card>
-                    </Layout>
-                    <Layout style={styles.container}>
-                        <Timer defaultHours={4} defaultMinutes={0} />
-
-                        <Link href="/lucidDream" asChild>
-                            <Button onPress={sessionActive ? endSession : startSession} style={styles.button}>
-                                <Text>{sessionActive ? 'End Session' : 'Start Session'}</Text>
-                            </Button>
-                        </Link>
-
-                        <Modal
-                            visible={modalVisible}
-                            backdropStyle={stylesScreen.backdrop}
-                            onBackdropPress={() => setModalVisible(false)}>
-                            <Card disabled={true}>
-                                <Text category='h6'>REM Period Achieved At:</Text>
-                                <ScrollView>
-                                    {remTimes.map((time, index) => (
-                                        <Text key={index}>{time}</Text>
-                                    ))}
-                                </ScrollView>
-                                <Button onPress={() => setModalVisible(false)}>
-                                    Close
-                                </Button>
-                            </Card>
-                        </Modal>
+                    </Modal>
 
                 </Layout>
-                    
-                    
-                    
-                    
-                    
-                    
-                    </ScrollView>
-                </Layout>
-                
             </ApplicationProvider>
         </>
     );
-
 }
 
 const stylesScreen = StyleSheet.create({
