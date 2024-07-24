@@ -7,11 +7,11 @@ import {
   StatusBar,
   TouchableOpacity,
   Platform,
+  Animated,
 } from "react-native";
 import { Audio } from "expo-av";
 import { Picker } from "@react-native-picker/picker";
-import { Button } from "@ui-kitten/components";
-import { Animated } from "react-native";
+import { useIsFocused } from '@react-navigation/native';
 
 
 const screen = Dimensions.get("window");
@@ -19,6 +19,7 @@ const screen = Dimensions.get("window");
 interface AppProps {
   defaultHours?: number; // Optional prop for default hours
   defaultMinutes?: number; // Optional prop for default minutes
+  isFocused: boolean; // Added prop to check if screen is focused
 }
 
 interface AppState {
@@ -56,7 +57,7 @@ const createArray = (length: number) => {
 const AVAILABLE_HOURS = createArray(24);
 const AVAILABLE_MINUTES = createArray(60);
 
-export default class App extends Component<AppProps, AppState> {
+class Timer extends Component<AppProps, AppState> {
   constructor(props: AppProps) {
     super(props);
     const { defaultHours = 0, defaultMinutes = 0 } = this.props;
@@ -93,12 +94,22 @@ export default class App extends Component<AppProps, AppState> {
     await this.soundObject.loadAsync(require("../assets/audio/alarm.mp3"));
   }
 
-  componentDidUpdate(prevProps: {}, prevState: AppState) {
+  componentDidUpdate(prevProps: AppProps, prevState: AppState) {
     if (this.state.remainingSeconds === 0 && prevState.remainingSeconds !== 0) {
       this.stopTimer(true); // Pass a flag indicating the timer ended naturally
     }
-  }
 
+    if (prevProps.isFocused && !this.props.isFocused) {
+      this.stop();
+    }
+
+    if (!prevProps.isFocused && this.props.isFocused) {
+      if (this.state.isRunning) {
+        this.start();
+      }
+    }
+  }
+  
   stopTimer = (ended = false) => {
     if (this.interval) {
       clearInterval(this.interval);
@@ -226,6 +237,12 @@ export default class App extends Component<AppProps, AppState> {
   }
 }
 
+const TimerWrapper = (props: AppProps) => {
+  const isFocused = useIsFocused();
+  return <Timer {...props} isFocused={isFocused} />;
+}
+
+export default TimerWrapper;
 
 const styles = StyleSheet.create({
   container: {

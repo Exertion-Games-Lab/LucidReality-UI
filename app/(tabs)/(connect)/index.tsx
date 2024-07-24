@@ -1,13 +1,19 @@
-import 'react-native-gesture-handler'
+import 'react-native-gesture-handler';
 import { View } from '../../../components/Themed';
 
 import { Stack, useRouter, Link } from 'expo-router';
-import styles from "../../../constants/Style"
+import styles from "../../../constants/Style";
 import { ApplicationProvider, Button, Divider, Layout, Text } from '@ui-kitten/components';
 import * as eva from '@eva-design/eva';
-import { default as theme } from "../../../theme.json"
+import { default as theme } from "../../../theme.json";
+import React, { useEffect } from 'react';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 
 export default function Home() {
+  useEffect(() => {
+    activateKeepAwakeAsync();
+    return () => deactivateKeepAwake();
+  }, []);
 
   return (
     <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
