@@ -14,8 +14,6 @@ import { Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
 
 // Declare the interface for dream entries
 interface DreamJournalEntry {
@@ -55,10 +53,24 @@ const index: React.FC = () => {
     const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
     const [sound, setSound] = useState<Audio.Sound | null>(null);
 
-    // Load dream entries on component mount
+    // State for rem_periods
+    const [remPeriods, setRemPeriods] = useState<string | null>(null);
+
+    // Load dream entries and rem periods on component mount
     useEffect(() => {
         loadDreamEntries();
+        loadRemPeriods(); // Load rem periods from AsyncStorage
     }, []);
+
+    // Function to load rem_periods from AsyncStorage
+    const loadRemPeriods = async () => {
+        try {
+            const storedRemPeriods = await AsyncStorage.getItem('@rem_periods');
+            setRemPeriods(storedRemPeriods);
+        } catch (e) {
+            console.log('Error loading REM periods', e);
+        }
+    };
 
     // Start recording audio
     const startRecording = async () => {
@@ -266,8 +278,8 @@ const index: React.FC = () => {
         try {
             const exportData = {
                 dreamEntries,
+                remPeriods, // Include the retrieved rem periods in the export
                 calibrationSettings: await AsyncStorage.getItem('@calibration_setting'),
-                remPeriods: await AsyncStorage.getItem('@rem_periods'),
             };
 
             const jsonString = JSON.stringify(exportData, null, 2);
