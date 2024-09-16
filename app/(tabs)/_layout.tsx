@@ -22,6 +22,18 @@ function TabBarIcon(props: {
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
+  // Move useEffect here inside the component
+  useEffect(() => {
+    const requestPermissions = async () => {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') {
+        await Notifications.requestPermissionsAsync();
+      }
+    };
+
+    requestPermissions();
+  }, []); // Empty dependency array ensures this runs once
+
   return (
     <Tabs
       screenOptions={{
@@ -72,6 +84,7 @@ export default function TabLayout() {
   );
 }
 
+// Keep notification handler setup outside the component
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -79,14 +92,3 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
-
-const requestPermissions = async () => {
-  const { status } = await Notifications.getPermissionsAsync();
-  if (status !== 'granted') {
-    await Notifications.requestPermissionsAsync();
-  }
-};
-
-useEffect(() => {
-  requestPermissions();
-}, []);

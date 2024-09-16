@@ -20,9 +20,6 @@ export default function JournalLayout() {
       
       {/* Configure the index screen */}
       <Stack.Screen name="index" options={{ title: 'Journal' }} />
-
-      {/* Add the DreamJournalScreen to the Stack Navigator */}
-      <Stack.Screen name="DreamJournalScreen" options={{ title: 'Dream Journal' }} />
     </Stack>
   );
 }

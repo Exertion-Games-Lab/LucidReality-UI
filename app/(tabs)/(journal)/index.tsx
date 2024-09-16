@@ -1,3 +1,4 @@
+import 'react-native-gesture-handler';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, FlatList, Alert, Platform } from 'react-native';
 import { Layout, Text, Button, Card, Modal, Input, ApplicationProvider, SelectItem, Select, IndexPath } from '@ui-kitten/components';
@@ -14,6 +15,7 @@ import { Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Declare the interface for dream entries
 interface DreamJournalEntry {
@@ -60,7 +62,21 @@ const index: React.FC = () => {
     useEffect(() => {
         loadDreamEntries();
         loadRemPeriods(); // Load rem periods from AsyncStorage
+        loadTimerLogs();  // Load timer logs from AsyncStorage
     }, []);
+
+    // Function to load timer logs
+    const loadTimerLogs = async () => {
+        try {
+            const storedLogs = await AsyncStorage.getItem('TIMER_LOGS');
+            if (storedLogs) {
+                const logs = JSON.parse(storedLogs);
+                console.log('Timer Logs:', logs);  // You can display or save these logs as needed
+            }
+        } catch (e) {
+            console.log('Error loading timer logs', e);
+        }
+    };
 
     // Function to load rem_periods from AsyncStorage
     const loadRemPeriods = async () => {
@@ -331,8 +347,12 @@ const index: React.FC = () => {
                 )
             ) : null}
             <View style={styles.buttonContainer}>
-                <Button accessoryLeft={edit} size="tiny" onPress={() => handleEditEntry(item)}>   Edit  </Button>
-                <Button accessoryLeft={bin} size="tiny" status="danger" onPress={() => handleDeleteEntry(item.id)}>Delete</Button>
+                <Button accessoryLeft={edit} size="tiny" onPress={() => handleEditEntry(item)}>   
+                    Edit  
+                </Button>
+                <Button accessoryLeft={bin} size="tiny" status="danger" onPress={() => handleDeleteEntry(item.id)}>
+                    Delete
+                </Button>
             </View>
         </Card>
     );
@@ -384,104 +404,106 @@ const index: React.FC = () => {
 
     return (
         <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
-            <Layout style={styles.container}>
-                <Button accessoryLeft={plus} onPress={() => { setModalVisible(true); resetForm(); }}>Add Dream Entry</Button>
-                <FlatList
-                    data={dreamEntries}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item.id}
-                />
-                <Button onPress={exportDreamReport} style={styles.exportButton}>Export Dream Report</Button>
-                <Modal
-                    visible={modalVisible}
-                    backdropStyle={styles.backdrop}
-                    onBackdropPress={() => { setModalVisible(false); resetForm(); }}
-                >
-                    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-                        <Card disabled={true} style={dynamicStyles.modalCard}>
-                            <ScrollView>
-                                <Input
-                                    label="Title*"
-                                    style={styles.spacing}
-                                    value={newEntry.title}
-                                    onChangeText={(text) => setNewEntry({ ...newEntry, title: text })}
-                                />
+            <GestureHandlerRootView style={{ flex: 1 }}>
+                <Layout style={styles.container}>
+                    <Button accessoryLeft={plus} onPress={() => { setModalVisible(true); resetForm(); }}>Add Dream Entry</Button>
+                    <FlatList
+                        data={dreamEntries}
+                        renderItem={renderItem}
+                        keyExtractor={(item) => item.id} // Ensure unique key
+                    />              
+                    <Button onPress={exportDreamReport} style={styles.exportButton}>Export Dream Report</Button>
+                    <Modal
+                        visible={modalVisible}
+                        backdropStyle={styles.backdrop}
+                        onBackdropPress={() => { setModalVisible(false); resetForm(); }}
+                    >
+                        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+                            <Card disabled={true} style={dynamicStyles.modalCard}>
+                                <ScrollView>
+                                    <Input
+                                        label="Title*"
+                                        style={styles.spacing}
+                                        value={newEntry.title}
+                                        onChangeText={(text) => setNewEntry({ ...newEntry, title: text })}
+                                    />
 
-                                <Input
-                                    label="Description"
-                                    value={newEntry.description}
-                                    onChangeText={(text) => setNewEntry({ ...newEntry, description: text })}
-                                    textStyle={{ minHeight: 130 }}
-                                    multiline={true}
-                                    style={styles.spacing}
-                                />
-                                <Text category='label' style={styles.label}>Date*</Text>
-                                <Layout>
-                                    {newEntry.date && (
-                                        <Text category='label'>
-                                            Selected Date: {formatDate(newEntry.date)}
-                                        </Text>
-                                    )}
-                                    <Button onPress={() => setShowDatePicker(true)} style={styles.spacing}>
-                                        Select Date
-                                    </Button>
-                                </Layout>
-                                {
-                                    showDatePicker && (
-                                        <DateTimePicker
-                                            testID="dateTimePicker-date"
-                                            value={new Date(newEntry.date || new Date().toISOString())}
-                                            mode="date"
-                                            display="default"
-                                            onChange={onChangeDate}
-                                        />
-                                    )
-                                }
-                                <Text category='label' style={styles.label}>Wake Up Time*</Text>
-                                <Layout>
-                                    {newEntry.sleepHours && (
-                                        <Text category='label'>
-                                            Selected Time: {formatTime(newEntry.sleepHours)}
-                                        </Text>
-                                    )}
-                                    <Button onPress={() => setShowTimePicker(true)} style={styles.spacing}>
-                                        Select Wake Up Time
-                                    </Button>
-                                </Layout>
-                                {
-                                    showTimePicker && (
-                                        <DateTimePicker
-                                            testID="dateTimePicker-time"
-                                            value={new Date(newEntry.sleepHours || new Date().toISOString())}
-                                            mode="time"
-                                            is24Hour={true}
-                                            display="default"
-                                            onChange={onChangeTime}
-                                        />
-                                    )
-                                }
-                                <Select
-                                    selectedIndex={selectedIndex}
-                                    onSelect={(index) => setSelectedIndex(index as IndexPath)}
-                                    value={newEntry.category}
-                                    style={styles.spacing}
-                                    label="Category"
-                                >
-                                    <SelectItem title='Normal' />
-                                    <SelectItem title='Lucid' />
-                                    <SelectItem title='Nightmare' />
-                                    <SelectItem title='Recurring' />
-                                </Select>
-                                {isRecording ? <StopButton /> : <RecordButton />}
+                                    <Input
+                                        label="Description"
+                                        value={newEntry.description}
+                                        onChangeText={(text) => setNewEntry({ ...newEntry, description: text })}
+                                        textStyle={{ minHeight: 130 }}
+                                        multiline={true}
+                                        style={styles.spacing}
+                                    />
+                                    <Text category='label' style={styles.label}>Date*</Text>
+                                    <Layout>
+                                        {newEntry.date && (
+                                            <Text category='label'>
+                                                Selected Date: {formatDate(newEntry.date)}
+                                            </Text>
+                                        )}
+                                        <Button onPress={() => setShowDatePicker(true)} style={styles.spacing}>
+                                            Select Date
+                                        </Button>
+                                    </Layout>
+                                    {
+                                        showDatePicker && (
+                                            <DateTimePicker
+                                                testID="dateTimePicker-date"
+                                                value={new Date(newEntry.date || new Date().toISOString())}
+                                                mode="date"
+                                                display="default"
+                                                onChange={onChangeDate}
+                                            />
+                                        )
+                                    }
+                                    <Text category='label' style={styles.label}>Wake Up Time*</Text>
+                                    <Layout>
+                                        {newEntry.sleepHours && (
+                                            <Text category='label'>
+                                                Selected Time: {formatTime(newEntry.sleepHours)}
+                                            </Text>
+                                        )}
+                                        <Button onPress={() => setShowTimePicker(true)} style={styles.spacing}>
+                                            Select Wake Up Time
+                                        </Button>
+                                    </Layout>
+                                    {
+                                        showTimePicker && (
+                                            <DateTimePicker
+                                                testID="dateTimePicker-time"
+                                                value={new Date(newEntry.sleepHours || new Date().toISOString())}
+                                                mode="time"
+                                                is24Hour={true}
+                                                display="default"
+                                                onChange={onChangeTime}
+                                            />
+                                        )
+                                    }
+                                    <Select
+                                        selectedIndex={selectedIndex}
+                                        onSelect={(index) => setSelectedIndex(index as IndexPath)}
+                                        value={newEntry.category}
+                                        style={styles.spacing}
+                                        label="Category"
+                                    >
+                                        <SelectItem title='Normal' />
+                                        <SelectItem title='Lucid' />
+                                        <SelectItem title='Nightmare' />
+                                        <SelectItem title='Recurring' />
+                                    </Select>
+                                    {isRecording ? <StopButton /> : <RecordButton />}
 
-                                <Button onPress={handleAddEditEntry}>
-                                    {isEditMode ? 'Update Entry' : 'Save Entry'}
-                                </Button>
-                            </ScrollView>
-                        </Card>
-                    </TouchableWithoutFeedback>
-                </Modal>
-            </Layout>
+                                    <Button onPress={handleAddEditEntry}>
+                                        {isEditMode ? 'Update Entry' : 'Save Entry'}
+                                    </Button>
+                                </ScrollView>
+                            </Card>
+                        </TouchableWithoutFeedback>
+                    </Modal>
+                </Layout>
+            </GestureHandlerRootView>
         </ApplicationProvider>
     );
 };

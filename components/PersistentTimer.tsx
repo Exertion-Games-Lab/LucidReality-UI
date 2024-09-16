@@ -9,13 +9,13 @@ import {
   TouchableOpacity,
   Platform,
   Animated,
-  AppStateStatus, 
+  AppStateStatus,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Audio } from "expo-av";
 import { Picker } from "@react-native-picker/picker";
 import { useIsFocused } from '@react-navigation/native';
-import * as Notifications from 'expo-notifications'; // Import Notifications API
+import * as Notifications from 'expo-notifications'; 
 
 const screen = Dimensions.get("window");
 
@@ -58,11 +58,17 @@ const PersistentTimer = ({
   const [selectedMinutes, setSelectedMinutes] = useState<string>(
     formatNumber(defaultMinutes)
   );
+  const [notificationScheduled, setNotificationScheduled] = useState<boolean>(false); // Track if a notification is scheduled
+
   const [timerEnded, setTimerEnded] = useState<boolean>(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const soundObjectRef = useRef<Audio.Sound | null>(null);
   const shakeAnimation = useRef(new Animated.Value(0)).current;
   const appState = useRef(AppState.currentState);
+
+  const [startTime, setStartTime] = useState<number | null>(null); // New state to track start time
+  const [endTime, setEndTime] = useState<number | null>(null);     // New state to track end time
+
 
   useEffect(() => {
     const loadState = async () => {
@@ -79,9 +85,9 @@ const PersistentTimer = ({
           }
         }
 
-        const endTime = await AsyncStorage.getItem("PERSISTENT_TIMER_END_TIME");
-        if (endTime) {
-          const timeLeft = Math.floor((parseInt(endTime, 10) - Date.now()) / 1000);
+        const savedEndTime = await AsyncStorage.getItem("PERSISTENT_TIMER_END_TIME");
+        if (savedEndTime) {
+          const timeLeft = Math.floor((parseInt(savedEndTime, 10) - Date.now()) / 1000);
           if (timeLeft > 0) {
             setRemainingSeconds(timeLeft);
             if (isRunning) {
@@ -149,33 +155,31 @@ const PersistentTimer = ({
   useEffect(() => {
     if (isFocused && isRunning) {
       const handleAppFocus = async () => {
-        // Clear the previous timeout
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
           timeoutRef.current = null;
         }
-  
+
         const storedEndTime = await AsyncStorage.getItem("PERSISTENT_TIMER_END_TIME");
         if (storedEndTime) {
-          const endTime = parseInt(storedEndTime, 10);
+          const savedEndTime = parseInt(storedEndTime, 10);
           const now = Date.now();
-          const timeLeft = Math.floor((endTime - now) / 1000);
-  
+          const timeLeft = Math.floor((savedEndTime - now) / 1000);
+
           if (timeLeft > 0) {
-            setRemainingSeconds(timeLeft);  // Sync remaining seconds with real time
-            startTimer(timeLeft);  // Start the timer from the recalculated time
+            setRemainingSeconds(timeLeft);
+            startTimer(timeLeft);
           } else {
-            setRemainingSeconds(0);  // Timer has ended, reset to 0
-            stopTimer(true);  // Stop the timer
+            setRemainingSeconds(0);
+            stopTimer(true);
           }
         }
       };
-  
-      handleAppFocus();  // Sync when app gains focus
+
+      handleAppFocus();
     }
-  
+
     return () => {
-      // Cleanup when the component unmounts or focus changes
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
@@ -206,34 +210,47 @@ const PersistentTimer = ({
     appState.current = nextAppState;
   };
 
-  const startTimer = (seconds: number) => {
-    // Clear any existing timer before starting a new one
+  // Clear any notifications before starting the timer
+  const clearExistingNotifications = async () => {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    setNotificationScheduled(false); // Reset notification tracking
+  };
+
+  const startTimer = async (seconds: number) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
 
+    // Start the countdown
     if (seconds > 0) {
       timeoutRef.current = setTimeout(() => {
         setRemainingSeconds(seconds - 1);
-        startTimer(seconds - 1);  // Recursive call to continue the countdown
+        startTimer(seconds - 1);
       }, 1000);
 
-      // Schedule notification for when the timer ends
-      Notifications.scheduleNotificationAsync({
-        content: {
-          title: "Timer Ended!",
-          body: "Your countdown timer has finished.",
-        },
-        trigger: { seconds },  // Trigger the notification after 'seconds'
-      });
+      // Cancel previous notifications and schedule a new one only if not scheduled
+      if (!notificationScheduled) {
+        await clearExistingNotifications();
+
+        // Schedule only one notification
+        Notifications.scheduleNotificationAsync({
+          content: {
+            title: "Timer Ended!",
+            body: "Your countdown timer has finished.",
+          },
+          trigger: { seconds }, // Trigger notification once after `seconds` delay
+        });
+
+        // Mark the notification as scheduled
+        setNotificationScheduled(true);
+      }
     } else {
-      stopTimer(true);  // Stop the timer when it reaches 0
+      stopTimer(true);
     }
   };
-  
+
   const stopTimer = async (ended = false) => {
-    // Clear any running timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
@@ -242,38 +259,54 @@ const PersistentTimer = ({
     setIsRunning(false);
     setTimerEnded(ended);
 
-    // Clear the stored end time
+    // Store end time and calculate duration
+    if (startTime) {
+      const endTime = Date.now();
+      setEndTime(endTime);
+
+      const duration = Math.floor((endTime - startTime) / 1000); // Duration in seconds
+
+      // Save log
+      const logEntry = {
+        startTime: new Date(startTime).toISOString(),
+        endTime: new Date(endTime).toISOString(),
+        duration, // in seconds
+      };
+
+      const existingLogs = await AsyncStorage.getItem('TIMER_LOGS');
+      const logs = existingLogs ? JSON.parse(existingLogs) : [];
+      logs.push(logEntry);
+      await AsyncStorage.setItem('TIMER_LOGS', JSON.stringify(logs));
+    }
+
     await AsyncStorage.removeItem("PERSISTENT_TIMER_END_TIME");
 
     if (ended) {
-      playSound();  // Play sound if timer ended
-      startShake();  // Start shake animation if needed
-      // No need to schedule another notification here, as it's already been scheduled.
+      playSound();
+      startShake();
     }
   };
 
   const start = async () => {
-    // Clear any existing timer before starting a new one
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-  
-    const totalSeconds =
-      parseInt(selectedHours, 10) * 3600 +
-      parseInt(selectedMinutes, 10) * 60;
-  
-    // Set remaining seconds to the selected time
+
+    const totalSeconds = parseInt(selectedHours, 10) * 3600 + parseInt(selectedMinutes, 10) * 60;
+
+    // Set start time
+    const currentStartTime = Date.now();
+    setStartTime(currentStartTime); // Set start time
+
     setRemainingSeconds(totalSeconds);
     setIsRunning(true);
-  
-    // Store the end time for persistence
+
     await AsyncStorage.setItem(
       "PERSISTENT_TIMER_END_TIME",
       (Date.now() + totalSeconds * 1000).toString()
     );
-  
-    // Start the timer
+
     startTimer(totalSeconds);
   };
 
