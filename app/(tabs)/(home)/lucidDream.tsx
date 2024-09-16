@@ -6,7 +6,6 @@ import { ApplicationProvider, Button, Text, Layout, Icon, IconElement, IconRegis
 import * as eva from '@eva-design/eva';
 import { default as theme } from "../../../theme.json";
 import PersistentTimer from '../../../components/PersistentTimer';
-import TimerWrapper from '../../../components/Timer';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import { AntDesign } from '@expo/vector-icons';
 import axios from 'axios';
@@ -279,8 +278,7 @@ const stylesScreen = StyleSheet.create({
     },
     icon: {
         width: 25,
-        height: 25,
-        size: 50
+        height: 25
     },
     card: {
         backgroundColor: 'rgba(0,0,0,0.5)',
