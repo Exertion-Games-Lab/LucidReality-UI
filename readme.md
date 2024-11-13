@@ -42,6 +42,7 @@ This app is built using React-Native with Expo Go.
 	(home) -> nap
 
 **To run this program using expo GO app for testing please follow the current steps:**
+Download Node.Js [here](https://nodejs.org/en). It enables npm.
 ```
 npm install
 npx expo start
