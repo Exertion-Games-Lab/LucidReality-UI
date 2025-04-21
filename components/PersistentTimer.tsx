@@ -3,23 +3,21 @@ import {
   StyleSheet,
   View,
   Text,
+  AppState,
   Dimensions,
   StatusBar,
   TouchableOpacity,
   Platform,
   Animated,
+  AppStateStatus,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Audio } from "expo-av";
 import { Picker } from "@react-native-picker/picker";
 import { useIsFocused } from '@react-navigation/native';
+import * as Notifications from 'expo-notifications'; 
 
 const screen = Dimensions.get("window");
-
-interface AppProps {
-  defaultHours?: number;
-  defaultMinutes?: number;
-}
 
 const formatNumber = (number: number) => `0${number}`.slice(-2);
 
@@ -36,10 +34,8 @@ const getRemaining = (time: number) => {
 
 const createArray = (length: number) => {
   const arr = [];
-  let i = 0;
-  while (i < length) {
+  for (let i = 0; i < length; i++) {
     arr.push(i.toString());
-    i += 1;
   }
   return arr;
 };
@@ -47,34 +43,58 @@ const createArray = (length: number) => {
 const AVAILABLE_HOURS = createArray(24);
 const AVAILABLE_MINUTES = createArray(60);
 
-const STORAGE_KEY = "PERSISTENT_TIMER_STATE";
-
-const PersistentTimer: React.FC<AppProps> = ({ defaultHours = 0, defaultMinutes = 0 }) => {
+const PersistentTimer = ({
+  defaultHours = 0,
+  defaultMinutes = 0,
+}) => {
+  const isFocused = useIsFocused();
   const [remainingSeconds, setRemainingSeconds] = useState<number>(
     defaultHours * 3600 + defaultMinutes * 60
   );
   const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [selectedHours, setSelectedHours] = useState<string>(defaultHours.toString());
-  const [selectedMinutes, setSelectedMinutes] = useState<string>(formatNumber(defaultMinutes));
+  const [selectedHours, setSelectedHours] = useState<string>(
+    defaultHours.toString()
+  );
+  const [selectedMinutes, setSelectedMinutes] = useState<string>(
+    formatNumber(defaultMinutes)
+  );
+  const [notificationScheduled, setNotificationScheduled] = useState<boolean>(false); // Track if a notification is scheduled
+
   const [timerEnded, setTimerEnded] = useState<boolean>(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const soundObjectRef = useRef<Audio.Sound | null>(null);
   const shakeAnimation = useRef(new Animated.Value(0)).current;
-  const isFocused = useIsFocused();
+  const appState = useRef(AppState.currentState);
+
+  const [startTime, setStartTime] = useState<number | null>(null); // New state to track start time
+  const [endTime, setEndTime] = useState<number | null>(null);     // New state to track end time
+
 
   useEffect(() => {
     const loadState = async () => {
       try {
-        const state = await AsyncStorage.getItem(STORAGE_KEY);
+        const state = await AsyncStorage.getItem("PERSISTENT_TIMER_STATE");
         if (state) {
           const parsedState = JSON.parse(state);
-          setRemainingSeconds(parsedState.remainingSeconds);
-          setIsRunning(parsedState.isRunning);
-          setSelectedHours(parsedState.selectedHours);
-          setSelectedMinutes(parsedState.selectedMinutes);
-          setTimerEnded(parsedState.timerEnded);
-          if (parsedState.isRunning) {
-            startTimer();
+          if (parsedState) {
+            setRemainingSeconds(parsedState.remainingSeconds);
+            setIsRunning(parsedState.isRunning);
+            setSelectedHours(parsedState.selectedHours);
+            setSelectedMinutes(parsedState.selectedMinutes);
+            setTimerEnded(parsedState.timerEnded);
+          }
+        }
+
+        const savedEndTime = await AsyncStorage.getItem("PERSISTENT_TIMER_END_TIME");
+        if (savedEndTime) {
+          const timeLeft = Math.floor((parseInt(savedEndTime, 10) - Date.now()) / 1000);
+          if (timeLeft > 0) {
+            setRemainingSeconds(timeLeft);
+            if (isRunning) {
+              startTimer(timeLeft);
+            }
+          } else {
+            stopTimer(true);
           }
         }
       } catch (error) {
@@ -89,16 +109,21 @@ const PersistentTimer: React.FC<AppProps> = ({ defaultHours = 0, defaultMinutes 
       staysActiveInBackground: true,
     }).then(() => {
       soundObjectRef.current = new Audio.Sound();
-      soundObjectRef.current.loadAsync(require("../assets/audio/alarm.mp3"));
+      soundObjectRef.current.loadAsync(
+        require("../assets/audio/alarm.mp3")
+      );
     });
 
+    const subscription = AppState.addEventListener("change", handleAppStateChange);
+
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
       if (soundObjectRef.current) {
         soundObjectRef.current.unloadAsync();
       }
+      subscription.remove();
     };
   }, []);
 
@@ -112,7 +137,7 @@ const PersistentTimer: React.FC<AppProps> = ({ defaultHours = 0, defaultMinutes 
           selectedMinutes,
           timerEnded,
         });
-        await AsyncStorage.setItem(STORAGE_KEY, stateToSave);
+        await AsyncStorage.setItem("PERSISTENT_TIMER_STATE", stateToSave);
       } catch (error) {
         console.error("Failed to save state", error);
       }
@@ -122,56 +147,167 @@ const PersistentTimer: React.FC<AppProps> = ({ defaultHours = 0, defaultMinutes 
   }, [remainingSeconds, isRunning, selectedHours, selectedMinutes, timerEnded]);
 
   useEffect(() => {
-    if (remainingSeconds === 0 && isRunning) {
+    if (remainingSeconds <= 0 && isRunning) {
       stopTimer(true);
     }
   }, [remainingSeconds]);
 
   useEffect(() => {
     if (isFocused && isRunning) {
-      startTimer();
-    } else if (!isFocused) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
+      const handleAppFocus = async () => {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+
+        const storedEndTime = await AsyncStorage.getItem("PERSISTENT_TIMER_END_TIME");
+        if (storedEndTime) {
+          const savedEndTime = parseInt(storedEndTime, 10);
+          const now = Date.now();
+          const timeLeft = Math.floor((savedEndTime - now) / 1000);
+
+          if (timeLeft > 0) {
+            setRemainingSeconds(timeLeft);
+            startTimer(timeLeft);
+          } else {
+            setRemainingSeconds(0);
+            stopTimer(true);
+          }
+        }
+      };
+
+      handleAppFocus();
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, [isFocused, isRunning]);
+
+  const handleAppStateChange = async (nextAppState: AppStateStatus) => {
+    if (appState.current.match(/inactive|background/) && nextAppState === "active") {
+      const now = Date.now();
+      const storedEndTime = await AsyncStorage.getItem("PERSISTENT_TIMER_END_TIME");
+      if (storedEndTime) {
+        const endTime = parseInt(storedEndTime, 10);
+        const timeLeft = Math.floor((endTime - now) / 1000);
+        if (timeLeft > 0) {
+          setRemainingSeconds(timeLeft);
+        } else {
+          setRemainingSeconds(0);
+          stopTimer(true);
+        }
+      }
+    } else if (appState.current === "active" && nextAppState.match(/inactive|background/)) {
+      if (isRunning) {
+        const endTime = Date.now() + remainingSeconds * 1000;
+        await AsyncStorage.setItem("PERSISTENT_TIMER_END_TIME", endTime.toString());
       }
     }
-  }, [isFocused]);
-
-  const startShake = () => {
-    Animated.sequence([
-      Animated.timing(shakeAnimation, { toValue: 10, duration: 100, useNativeDriver: true }),
-      Animated.timing(shakeAnimation, { toValue: -10, duration: 100, useNativeDriver: true }),
-      Animated.timing(shakeAnimation, { toValue: 10, duration: 100, useNativeDriver: true }),
-      Animated.timing(shakeAnimation, { toValue: 0, duration: 100, useNativeDriver: true })
-    ]).start(() => startShake());
+    appState.current = nextAppState;
   };
 
-  const startTimer = () => {
-    intervalRef.current = setInterval(() => {
-      setRemainingSeconds(prevState => prevState - 1);
-    }, 1000);
+  // Clear any notifications before starting the timer
+  const clearExistingNotifications = async () => {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    setNotificationScheduled(false); // Reset notification tracking
   };
 
-  const start = () => {
-    setRemainingSeconds(
-      parseInt(selectedHours, 10) * 3600 + parseInt(selectedMinutes, 10) * 60
-    );
-    setIsRunning(true);
-    startTimer();
-  };
-
-  const stopTimer = (ended = false) => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+  const startTimer = async (seconds: number) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
+
+    // Start the countdown
+    if (seconds > 0) {
+      timeoutRef.current = setTimeout(() => {
+        setRemainingSeconds(seconds - 1);
+        startTimer(seconds - 1);
+      }, 1000);
+
+      // Cancel previous notifications and schedule a new one only if not scheduled
+      if (!notificationScheduled) {
+        await clearExistingNotifications();
+
+        // Schedule only one notification
+        Notifications.scheduleNotificationAsync({
+          content: {
+            title: "Timer Ended!",
+            body: "Your countdown timer has finished.",
+          },
+          trigger: { seconds }, // Trigger notification once after `seconds` delay
+        });
+
+        // Mark the notification as scheduled
+        setNotificationScheduled(true);
+      }
+    } else {
+      stopTimer(true);
+    }
+  };
+
+  const stopTimer = async (ended = false) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
     setIsRunning(false);
     setTimerEnded(ended);
+
+    // Store end time and calculate duration
+    if (startTime) {
+      const endTime = Date.now();
+      setEndTime(endTime);
+
+      const duration = Math.floor((endTime - startTime) / 1000); // Duration in seconds
+
+      // Save log
+      const logEntry = {
+        startTime: new Date(startTime).toISOString(),
+        endTime: new Date(endTime).toISOString(),
+        duration, // in seconds
+      };
+
+      const existingLogs = await AsyncStorage.getItem('TIMER_LOGS');
+      const logs = existingLogs ? JSON.parse(existingLogs) : [];
+      logs.push(logEntry);
+      await AsyncStorage.setItem('TIMER_LOGS', JSON.stringify(logs));
+    }
+
+    await AsyncStorage.removeItem("PERSISTENT_TIMER_END_TIME");
+
     if (ended) {
       playSound();
       startShake();
     }
+  };
+
+  const start = async () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
+    const totalSeconds = parseInt(selectedHours, 10) * 3600 + parseInt(selectedMinutes, 10) * 60;
+
+    // Set start time
+    const currentStartTime = Date.now();
+    setStartTime(currentStartTime); // Set start time
+
+    setRemainingSeconds(totalSeconds);
+    setIsRunning(true);
+
+    await AsyncStorage.setItem(
+      "PERSISTENT_TIMER_END_TIME",
+      (Date.now() + totalSeconds * 1000).toString()
+    );
+
+    startTimer(totalSeconds);
   };
 
   const stop = () => {
@@ -189,6 +325,33 @@ const PersistentTimer: React.FC<AppProps> = ({ defaultHours = 0, defaultMinutes 
       await soundObjectRef.current.stopAsync();
     }
     setTimerEnded(false);
+    shakeAnimation.stopAnimation();
+    shakeAnimation.setValue(0);
+  };
+
+  const startShake = () => {
+    Animated.sequence([
+      Animated.timing(shakeAnimation, {
+        toValue: 10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: -10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: 10,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeAnimation, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start(() => startShake());
   };
 
   const { hours, minutes, seconds } = getRemaining(remainingSeconds);
@@ -207,7 +370,7 @@ const PersistentTimer: React.FC<AppProps> = ({ defaultHours = 0, defaultMinutes 
             onValueChange={setSelectedHours}
             mode="dropdown"
           >
-            {AVAILABLE_HOURS.map(value => (
+            {AVAILABLE_HOURS.map((value) => (
               <Picker.Item key={value} label={value} value={value} />
             ))}
           </Picker>
@@ -219,7 +382,7 @@ const PersistentTimer: React.FC<AppProps> = ({ defaultHours = 0, defaultMinutes 
             onValueChange={setSelectedMinutes}
             mode="dropdown"
           >
-            {AVAILABLE_MINUTES.map(value => (
+            {AVAILABLE_MINUTES.map((value) => (
               <Picker.Item key={value} label={value} value={value} />
             ))}
           </Picker>
@@ -227,7 +390,10 @@ const PersistentTimer: React.FC<AppProps> = ({ defaultHours = 0, defaultMinutes 
         </View>
       )}
       {isRunning ? (
-        <TouchableOpacity onPress={stop} style={[styles.button, styles.buttonStop]}>
+        <TouchableOpacity
+          onPress={stop}
+          style={[styles.button, styles.buttonStop]}
+        >
           <Text style={[styles.buttonText, styles.buttonTextStop]}>Pause</Text>
         </TouchableOpacity>
       ) : timerEnded ? (
@@ -251,9 +417,12 @@ const PersistentTimer: React.FC<AppProps> = ({ defaultHours = 0, defaultMinutes 
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: "center",
-    justifyContent: "center",
+    marginVertical: 20,
+  },
+  timerText: {
+    color: "#fff",
+    fontSize: 90,
   },
   button: {
     borderWidth: 10,
@@ -275,13 +444,8 @@ const styles = StyleSheet.create({
   buttonTextStop: {
     color: "#FF851B",
   },
-  timerText: {
-    color: "#fff",
-    fontSize: 90,
-  },
   picker: {
-    flex: 1,
-    maxWidth: 100,
+    width: 100,
     ...Platform.select({
       android: {
         color: "#fff",
@@ -302,6 +466,16 @@ const styles = StyleSheet.create({
   pickerContainer: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  clearButton: {
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: "#ff4040",
+    borderRadius: 10,
+  },
+  clearButtonText: {
+    color: "#fff",
+    fontSize: 18,
   },
 });
 

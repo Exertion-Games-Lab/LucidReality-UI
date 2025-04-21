@@ -1,4 +1,5 @@
 import { StyleSheet, Alert, Dimensions } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { View } from '../../../components/Themed';
 import styles from "../../../constants/Style"
 import { ApplicationProvider, Button, Divider, Layout, Text, Modal, Card, Input, Radio, RadioGroup, Spinner } from '@ui-kitten/components';
@@ -299,7 +300,7 @@ function ConnectInner() {
           </Button>
         )}
 
-        <Text category='h6'>GVS Intensity</Text>
+        {/* <Text category='h6'>GVS Intensity</Text>
         <Text category='c1'>{apiVariables.gvsIntensity}</Text>
         <Slider
           style={{ width: 250, height: 40 }}
@@ -326,7 +327,7 @@ function ConnectInner() {
           >
             Test GVS Stimulus
           </Button>
-        )}
+        )} */}
 
       
         <Text category='label' status='danger'>Please save before exiting the screen!</Text>
@@ -343,7 +344,11 @@ function ConnectInner() {
 //Need to wrap whole screen in APIProvider so that we can update/access API variables
 export default function Connect() {
   return (
-    <ConnectInner />
+    <>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <ConnectInner />
+      </GestureHandlerRootView>
+    </>
   );
 }
 

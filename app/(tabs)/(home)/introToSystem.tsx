@@ -106,7 +106,7 @@ export default function introToSystem() {
                 <Layout style={styles.container}>
                     <ScrollView>
                         <Layout style={stylesScreen.titleContainer}>
-                            <Text category='h5'>The system and our approach</Text>
+                            <Text category='h5'>The prototype and our approach</Text>
                             <Button
                                 style={stylesScreen.button}
                                 appearance='outline'
@@ -131,9 +131,9 @@ export default function introToSystem() {
                         </Layout>
 
                         <Card style={styles.card}>
-                            <Text style={stylesScreen.boldText} category='h6'>Stimulus devices</Text>
-                            <Text category='p1'>Stimulus devices include any devices that will directly aid in helping lucidity. The basic setup includes an LED, electrical stimulation, and a speaker. If you feel uncomfortable during the stimulation, please press the emergency button and inform the researchers to stop the study. After pressing, please rotate the button clockwise for the usage next time.</Text>
-                            {/* <Text category='p1'>{'\n'}For now this app only supports LED, Audio and TACs but additional support is coming</Text> */}
+                            <Text style={stylesScreen.boldText} category='h6'>Cue modules</Text>
+                            <Text category='p1'>Cue modules include any devices that will directly aid in helping lucidity. For example, in the most basic setup, LEDs and Speakers are both devices that help a user reach lucidity. </Text>
+                            {/* <Text category='p1'>{'\n'}For now this app only supports LED, Audio.</Text> */}
                         </Card>
 
                         {

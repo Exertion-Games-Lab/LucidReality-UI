@@ -9,7 +9,8 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { loadAPIVariables, APIVariables, defaultValues } from '../../../APICalls/storage';
 import GlobalEventEmitter from '../../../APICalls/EventEmitter';
-import TimerWrapper from '../../../components/Timer';
+import PersistentTimer from '../../../components/PersistentTimer';
+import Timer from '../../../components/Timer';
 
 const arrow = (props: any) => (
     <Icon name='arrow-forward-outline' {...props} animation='pulse' />
@@ -117,7 +118,7 @@ export default function cognitiveTraining() {
                         <Button onPress={toggleSending} status={isSending ? 'danger' : 'success'}>
                             {isSending ? 'Stop Stimuli' : 'Start Stimuli'}
                         </Button>
-                        <TimerWrapper defaultHours={0} defaultMinutes={10} isFocused={false}/>
+                        <Timer defaultHours={0} defaultMinutes={10} isFocused/>
                     </ScrollView>
                 </Layout>
                 <Link href="/lucidDream" asChild>
@@ -177,9 +178,8 @@ const stylesScreen = StyleSheet.create({
         marginLeft: 10
     },
     icon: {
-        width: 25,
-        height: 25,
-        size: 50
+        width: 50,
+        height: 50
     },
     spacing: {
         margin: 5

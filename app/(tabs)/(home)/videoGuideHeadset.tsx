@@ -1,5 +1,5 @@
 import { Link, Stack } from 'expo-router';
-import { Pressable, SafeAreaView, StyleSheet, ScrollView, Platform } from 'react-native';
+import { Pressable, SafeAreaView, StyleSheet, ScrollView, Platform, Image } from 'react-native';
 
 import { useRef } from 'react';
 
@@ -17,6 +17,13 @@ import YoutubePlayer from 'react-native-youtube-iframe';
 
 import VideoCard from '../../../components/videoCard';
 import { Dimensions } from 'react-native';
+
+
+//image
+import imgElectrode1 from '../../../assets/images/electrode1.png'
+import imgElectrode2 from '../../../assets/images/electrode2.png'
+import imgSleepTrackingCap1 from '../../../assets/images/cap1.png'
+import imgSleepTrackingCap2 from '../../../assets/images/cap2.png'
 
 const screenWidth = Dimensions.get('window').width;
 const dynamicWidth = screenWidth * 0.9;
@@ -36,25 +43,36 @@ export default function videoGuideHeadset() {
 
                     <Text status='success' style={stylesScreen.boldText} category='p2'>Now please put on the headband</Text>
                 </Layout>
-                <Layout style={styles.container}>
-                <VideoCard
-                    title="Step 1: Wear the headset"
-                    excerpt="Please closely follow the electrode placements shown in the video."
+                {/* <Layout style={styles.container}>
+                {/* <VideoCard
+                    title="Wear the headset"
+                    // excerpt="Please closely follow the electrode placements shown in the video."
                 >
                     <YoutubePlayer height={300}  play={false} videoId={'DRGktMG2MhI'} />
-                </VideoCard>
-                </Layout>
+                </VideoCard> }
+                 
+                </Layout> */}
                 <Layout style={styles.container}>
                     <ScrollView>
                         <Card style={styles.card}>
+                            <Text category='label'>Step 1</Text>
+                            <Text category='s1' style={stylesScreen.spacing}>Please wipe your forehead and the eye area (places where the electrodes will be attached) with a sanitary wipe. Attach the sticky electrodes on (1) both side of your eyes, (2) the center of forehead, and (3) behind the right ear.</Text>
+                            <Layout style={styles.container}>
+                                <Image style={stylesScreen.image} source={imgElectrode1} />
+                            </Layout>
+                            <Layout style={styles.container}>
+                                <Image style={stylesScreen.image} source={imgElectrode2} />
+                            </Layout>
                             <Text category='label'>Step 2</Text>
-                            <Text category='s1' style={stylesScreen.spacing}>Navigate to LucidReality-Devices/detector folder in your terminal</Text>
-
+                            <Text category='s1' style={stylesScreen.spacing}>1. Put the sleep tracker on to the head. Blue eletrodes should face the front. 2. Clip the blue eletrodes to the sticky electrodes on the head: (1) orange cable connects to the electrode on the center of forehand, (2) red cable connects to the electrode on the right temple, (3) yellow cable connects to the electrode on the left temple, and (4) black cable connects to the electode behind right ear. </Text>
+                            <Layout style={styles.container}>
+                                <Image style={stylesScreen.image} source={imgSleepTrackingCap1} />
+                            </Layout>
+                            <Layout style={styles.container}>
+                                <Image style={stylesScreen.image} source={imgSleepTrackingCap2} />
+                            </Layout>
                             <Text category='label'>Step 3</Text>
-                            <Text category='s1' style={stylesScreen.spacing}>In the terminal type 'python Detector.py' and press enter</Text>
-
-                            <Text category='label'>Step 4</Text>
-                            <Text category='s1' style={stylesScreen.spacing}>The script is running successfully if you see the terminal print a ip address and output the REM state to console every second</Text>
+                            <Text category='s1' style={stylesScreen.spacing}>Adjust the size with the velcro band on the jaw.</Text>
                         </Card>
 
                     </ScrollView>

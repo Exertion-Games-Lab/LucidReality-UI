@@ -17,8 +17,10 @@ export default function JournalLayout() {
           fontWeight: 'bold',
         },
       }}>
-      {/* Optionally configure static options outside the route. */}
-      <Stack.Screen name="index" options={{title: 'Journal'}} />
+      
+      {/* Configure the index screen */}
+      <Stack.Screen name="index" options={{ title: 'Journal' }} />
     </Stack>
   );
 }
+

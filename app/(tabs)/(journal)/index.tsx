@@ -1,7 +1,10 @@
+import 'react-native-gesture-handler';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, FlatList, Alert, Platform } from 'react-native';
 import { Layout, Text, Button, Card, Modal, Input, ApplicationProvider, SelectItem, Select, IndexPath } from '@ui-kitten/components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import * as eva from '@eva-design/eva';
 import { default as theme } from "../../../theme.json";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -11,12 +14,10 @@ import { Dimensions } from 'react-native';
 import { Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Audio } from 'expo-av';
-import Slider from '@react-native-community/slider';
-import { AVPlaybackStatus } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-
-
+// Declare the interface for dream entries
 interface DreamJournalEntry {
     id: string;
     title: string;
@@ -29,7 +30,8 @@ interface DreamJournalEntry {
     recordingUri?: string | null;
 }
 
-const DreamJournalScreen: React.FC = () => {
+const index: React.FC = () => {
+    // State variables
     const [dreamEntries, setDreamEntries] = useState<DreamJournalEntry[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -45,26 +47,48 @@ const DreamJournalScreen: React.FC = () => {
         locations: [],
     });
     const [selectedIndex, setSelectedIndex] = useState<IndexPath>(new IndexPath(0));
-
-    // State to control the visibility of DateTimePicker
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
-    //Save button enabled or not
     const [isSaveButtonEnabled, setIsSaveButtonEnabled] = useState(false);
-
-
-    //Recording
     const [recording, setRecording] = useState<Audio.Recording | null>(null);
     const [isRecording, setIsRecording] = useState(false);
     const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
     const [sound, setSound] = useState<Audio.Sound | null>(null);
 
+    // State for rem_periods
+    const [remPeriods, setRemPeriods] = useState<string | null>(null);
 
+    // Load dream entries and rem periods on component mount
     useEffect(() => {
         loadDreamEntries();
+        loadRemPeriods(); // Load rem periods from AsyncStorage
+        loadTimerLogs();  // Load timer logs from AsyncStorage
     }, []);
 
-    // Start recording
+    // Function to load timer logs
+    const loadTimerLogs = async () => {
+        try {
+            const storedLogs = await AsyncStorage.getItem('TIMER_LOGS');
+            if (storedLogs) {
+                const logs = JSON.parse(storedLogs);
+                console.log('Timer Logs:', logs);  // You can display or save these logs as needed
+            }
+        } catch (e) {
+            console.log('Error loading timer logs', e);
+        }
+    };
+
+    // Function to load rem_periods from AsyncStorage
+    const loadRemPeriods = async () => {
+        try {
+            const storedRemPeriods = await AsyncStorage.getItem('@rem_periods');
+            setRemPeriods(storedRemPeriods);
+        } catch (e) {
+            console.log('Error loading REM periods', e);
+        }
+    };
+
+    // Start recording audio
     const startRecording = async () => {
         try {
             await Audio.requestPermissionsAsync();
@@ -83,7 +107,7 @@ const DreamJournalScreen: React.FC = () => {
         }
     };
 
-    // Stop recording
+    // Stop recording audio
     const stopRecording = async () => {
         if (!recording) {
             return;
@@ -95,25 +119,22 @@ const DreamJournalScreen: React.FC = () => {
         setIsRecording(false)
     };
 
-    // Function to play the recording
+    // Play recorded audio
     const playRecording = async (uri: string) => {
         const { sound } = await Audio.Sound.createAsync(
             { uri: uri },
             { shouldPlay: true }
         );
-
-        // Play the sound
         await sound.playAsync();
     };
 
+    // Start playback of recorded audio
     const startPlayback = async (uri: string, entryId: string) => {
-        // First, stop any currently playing sound
         if (sound) {
             await sound.unloadAsync();
             setSound(null);
         }
 
-        // Only start playback if the uri is valid and not currently playing
         if (uri && currentlyPlaying !== entryId) {
             const { sound: playbackSound } = await Audio.Sound.createAsync(
                 { uri },
@@ -122,11 +143,10 @@ const DreamJournalScreen: React.FC = () => {
             setSound(playbackSound);
             setCurrentlyPlaying(entryId);
 
-            // When the audio finishes, reset the currently playing state
             playbackSound.setOnPlaybackStatusUpdate((status) => {
                 if (!status.isLoaded) {
+                    return;
                 } else {
-                    // This will be true when the audio has finished playing
                     if (status.didJustFinish) {
                         setCurrentlyPlaying(null);
                     }
@@ -136,6 +156,7 @@ const DreamJournalScreen: React.FC = () => {
         }
     };
 
+    // Stop playback of recorded audio
     const stopPlayback = async () => {
         if (sound) {
             await sound.stopAsync();
@@ -145,23 +166,21 @@ const DreamJournalScreen: React.FC = () => {
         }
     };
 
-
-    // Adjusted Date change handler
+    // Handle date change for the entry
     const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
         const currentDate = selectedDate || new Date();
-        setShowDatePicker(Platform.OS === 'ios'); // Hide picker on Android after selection
+        setShowDatePicker(Platform.OS === 'ios');
         setNewEntry({ ...newEntry, date: currentDate.toISOString() });
     };
 
-    // Adjusted Time change handler
+    // Handle time change for the entry
     const onChangeTime = (event: DateTimePickerEvent, selectedTime?: Date) => {
         const currentTime = selectedTime || new Date();
-        setShowTimePicker(Platform.OS === 'ios'); // Hide picker on Android after selection
+        setShowTimePicker(Platform.OS === 'ios');
         setNewEntry({ ...newEntry, sleepHours: currentTime.toISOString() });
     };
 
-
-
+    // Format date for display
     const formatDate = (isoString: string | number | Date) => {
         const date = new Date(isoString);
         return date.toLocaleDateString('en-GB', {
@@ -171,6 +190,7 @@ const DreamJournalScreen: React.FC = () => {
         });
     };
 
+    // Format time for display
     const formatTime = (isoString: string | number | Date) => {
         const date = new Date(isoString);
         return date.toLocaleTimeString('en-US', {
@@ -180,13 +200,13 @@ const DreamJournalScreen: React.FC = () => {
         });
     };
 
+    // Load dream entries from AsyncStorage
     const loadDreamEntries = async () => {
         try {
             const keys = await AsyncStorage.getAllKeys();
             const result = await AsyncStorage.multiGet(keys);
             let entries = result.map(([key, value]) => value ? JSON.parse(value) : null).filter(Boolean) as DreamJournalEntry[];
 
-            // Sort entries by date from most recent to furthest away
             entries = entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
             setDreamEntries(entries);
@@ -195,7 +215,7 @@ const DreamJournalScreen: React.FC = () => {
         }
     };
 
-
+    // Save or update a dream entry
     const saveDreamEntry = async (entry: DreamJournalEntry) => {
         try {
             const jsonValue = JSON.stringify(entry);
@@ -205,12 +225,13 @@ const DreamJournalScreen: React.FC = () => {
             } else {
                 setDreamEntries([...dreamEntries, entry]);
             }
-            loadDreamEntries(); // Refresh entries list
+            loadDreamEntries();
         } catch (e) {
             console.log(e);
         }
     };
 
+    // Delete a dream entry
     const deleteDreamEntry = async (id: string) => {
         try {
             await AsyncStorage.removeItem(`@dream_journal_${id}`);
@@ -220,6 +241,7 @@ const DreamJournalScreen: React.FC = () => {
         }
     };
 
+    // Handle adding or editing a dream entry
     const handleAddEditEntry = () => {
         const entryToSave = { ...newEntry, category: ['Normal', 'Lucid', 'Nightmare', 'Recurring'][selectedIndex.row] as DreamJournalEntry['category'] };
         if (isEditMode && editEntryId) {
@@ -232,6 +254,7 @@ const DreamJournalScreen: React.FC = () => {
         resetForm();
     };
 
+    // Handle deleting an entry
     const handleDeleteEntry = (id: string) => {
         Alert.alert("Delete Entry", "Are you sure you want to delete this entry?", [
             { text: "Cancel" },
@@ -239,6 +262,7 @@ const DreamJournalScreen: React.FC = () => {
         ]);
     };
 
+    // Handle editing an entry
     const handleEditEntry = (entry: DreamJournalEntry) => {
         setNewEntry(entry);
         setIsEditMode(true);
@@ -248,6 +272,7 @@ const DreamJournalScreen: React.FC = () => {
         setSelectedIndex(new IndexPath(categoryIndex));
     };
 
+    // Reset the form to its initial state
     const resetForm = () => {
         setNewEntry({
             id: '',
@@ -264,6 +289,28 @@ const DreamJournalScreen: React.FC = () => {
         setSelectedIndex(new IndexPath(0));
     };
 
+    // Export dream report as JSON
+    const exportDreamReport = async () => {
+        try {
+            const exportData = {
+                dreamEntries,
+                remPeriods, // Include the retrieved rem periods in the export
+                calibrationSettings: await AsyncStorage.getItem('@calibration_setting'),
+            };
+
+            const jsonString = JSON.stringify(exportData, null, 2);
+            const fileUri = FileSystem.documentDirectory + 'dream_report.json';
+
+            await FileSystem.writeAsStringAsync(fileUri, jsonString);
+
+            await Sharing.shareAsync(fileUri);
+        } catch (error) {
+            console.error('Error exporting dream report', error);
+            Alert.alert("Export Error", "There was an error exporting the dream report. Please try again.");
+        }
+    };
+
+    // Render individual dream entry cards
     const renderItem = ({ item }: { item: DreamJournalEntry }) => (
         <Card style={styles.card}>
             <Text category="h5" style={styles.renderSpacing}>{item.title}</Text>
@@ -277,10 +324,8 @@ const DreamJournalScreen: React.FC = () => {
             <Text category="label" style={styles.label}>Description:</Text>
             <Text category="s1" style={styles.renderSpacing}>{item.description}</Text>
 
-
             <Text category="label" style={styles.label}>Category:</Text>
             <Text category="s1">{item.category}</Text>
-            {/* Display characters and locations if needed */}
 
             {item.recordingUri ? (
                 currentlyPlaying === item.id ? (
@@ -302,12 +347,17 @@ const DreamJournalScreen: React.FC = () => {
                 )
             ) : null}
             <View style={styles.buttonContainer}>
-                <Button accessoryLeft={edit} size="tiny" onPress={() => handleEditEntry(item)}>   Edit  </Button>
-                <Button accessoryLeft={bin} size="tiny" status="danger" onPress={() => handleDeleteEntry(item.id)}>Delete</Button>
+                <Button accessoryLeft={edit} size="tiny" onPress={() => handleEditEntry(item)}>   
+                    Edit  
+                </Button>
+                <Button accessoryLeft={bin} size="tiny" status="danger" onPress={() => handleDeleteEntry(item.id)}>
+                    Delete
+                </Button>
             </View>
         </Card>
     );
 
+    // Icons for buttons
     const plus = (props: any) => (
         <Feather name="plus" size={18} color="white" />
     );
@@ -327,7 +377,6 @@ const DreamJournalScreen: React.FC = () => {
     const StopIcon = (props: any) => (
         <Ionicons name="stop-circle-outline" size={30} color="red" {...props} />
     );
-
 
     // Button to start recording
     const RecordButton = () => (
@@ -353,125 +402,122 @@ const DreamJournalScreen: React.FC = () => {
         </Button>
     );
 
-
     return (
         <ApplicationProvider {...eva} theme={{ ...eva.dark, ...theme }}>
-            <Layout style={styles.container}>
-                <Button accessoryLeft={plus} onPress={() => { setModalVisible(true); resetForm(); }}>Add Dream Entry</Button>
-                <FlatList
-                    data={dreamEntries}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item.id}
-                />
-                <Modal
+            <GestureHandlerRootView style={{ flex: 1 }}>
+                <Layout style={styles.container}>
+                    <Button accessoryLeft={plus} onPress={() => { setModalVisible(true); resetForm(); }}>Add Dream Entry</Button>
+                    <FlatList
+                        data={dreamEntries}
+                        renderItem={renderItem}
+                        keyExtractor={(item) => item.id} // Ensure unique key
+                    />              
+                    <Button onPress={exportDreamReport} style={styles.exportButton}>Export Dream Report</Button>
+                    <Modal
+                        visible={modalVisible}
+                        backdropStyle={styles.backdrop}
+                        onBackdropPress={() => { setModalVisible(false); resetForm(); }}
+                    >
+                        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+                            <Card disabled={true} style={dynamicStyles.modalCard}>
+                                <ScrollView>
+                                    <Input
+                                        label="Title*"
+                                        style={styles.spacing}
+                                        value={newEntry.title}
+                                        onChangeText={(text) => setNewEntry({ ...newEntry, title: text })}
+                                    />
 
-                    visible={modalVisible}
-                    backdropStyle={styles.backdrop}
-                    onBackdropPress={() => { setModalVisible(false); resetForm(); }}
-                >
-                    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-                        <Card disabled={true} style={dynamicStyles.modalCard}>
-                            <ScrollView>
-                                <Input
-                                    label="Title*"
-                                    style={styles.spacing}
-                                    value={newEntry.title}
-                                    onChangeText={(text) => setNewEntry({ ...newEntry, title: text })}
-                                />
+                                    <Input
+                                        label="Description"
+                                        value={newEntry.description}
+                                        onChangeText={(text) => setNewEntry({ ...newEntry, description: text })}
+                                        textStyle={{ minHeight: 130 }}
+                                        multiline={true}
+                                        style={styles.spacing}
+                                    />
+                                    <Text category='label' style={styles.label}>Date*</Text>
+                                    <Layout>
+                                        {newEntry.date && (
+                                            <Text category='label'>
+                                                Selected Date: {formatDate(newEntry.date)}
+                                            </Text>
+                                        )}
+                                        <Button onPress={() => setShowDatePicker(true)} style={styles.spacing}>
+                                            Select Date
+                                        </Button>
+                                    </Layout>
+                                    {
+                                        showDatePicker && (
+                                            <DateTimePicker
+                                                testID="dateTimePicker-date"
+                                                value={new Date(newEntry.date || new Date().toISOString())}
+                                                mode="date"
+                                                display="default"
+                                                onChange={onChangeDate}
+                                            />
+                                        )
+                                    }
+                                    <Text category='label' style={styles.label}>Wake Up Time*</Text>
+                                    <Layout>
+                                        {newEntry.sleepHours && (
+                                            <Text category='label'>
+                                                Selected Time: {formatTime(newEntry.sleepHours)}
+                                            </Text>
+                                        )}
+                                        <Button onPress={() => setShowTimePicker(true)} style={styles.spacing}>
+                                            Select Wake Up Time
+                                        </Button>
+                                    </Layout>
+                                    {
+                                        showTimePicker && (
+                                            <DateTimePicker
+                                                testID="dateTimePicker-time"
+                                                value={new Date(newEntry.sleepHours || new Date().toISOString())}
+                                                mode="time"
+                                                is24Hour={true}
+                                                display="default"
+                                                onChange={onChangeTime}
+                                            />
+                                        )
+                                    }
+                                    <Select
+                                        selectedIndex={selectedIndex}
+                                        onSelect={(index) => setSelectedIndex(index as IndexPath)}
+                                        value={newEntry.category}
+                                        style={styles.spacing}
+                                        label="Category"
+                                    >
+                                        <SelectItem title='Normal' />
+                                        <SelectItem title='Lucid' />
+                                        <SelectItem title='Nightmare' />
+                                        <SelectItem title='Recurring' />
+                                    </Select>
+                                    {isRecording ? <StopButton /> : <RecordButton />}
 
-                                <Input
-                                    label="Description"
-                                    value={newEntry.description}
-                                    onChangeText={(text) => setNewEntry({ ...newEntry, description: text })}
-                                    textStyle={{ minHeight: 130 }}
-                                    multiline={true}
-                                    style={styles.spacing}
-                                />
-                                <Text category='label' style={styles.label}>Date*</Text>
-                                <Layout>
-
-                                    {newEntry.date && (
-                                        <Text category='label'>
-                                            Selected Date: {formatDate(newEntry.date)}
-                                        </Text>
-                                    )}
-                                    <Button onPress={() => setShowDatePicker(true)} style={styles.spacing}>
-                                        Select Date
+                                    <Button onPress={handleAddEditEntry}>
+                                        {isEditMode ? 'Update Entry' : 'Save Entry'}
                                     </Button>
-                                </Layout>
-                                {
-                                    showDatePicker && (
-                                        <DateTimePicker
-                                            testID="dateTimePicker-date"
-                                            value={new Date(newEntry.date || new Date().toISOString())}
-                                            mode="date"
-                                            display="default"
-                                            onChange={onChangeDate}
-                                        />
-                                    )
-                                }
-                                <Text category='label' style={styles.label}>Wake Up Time*</Text>
-                                <Layout>
-
-                                    {newEntry.sleepHours && (
-                                        <Text category='label'>
-                                            Selected Time: {formatTime(newEntry.sleepHours)}
-                                        </Text>
-                                    )}
-                                    <Button onPress={() => setShowTimePicker(true)} style={styles.spacing}>
-                                        Select Wake Up Time
-                                    </Button>
-                                </Layout>
-                                {
-                                    showTimePicker && (
-                                        <DateTimePicker
-                                            testID="dateTimePicker-time"
-                                            value={new Date(newEntry.sleepHours || new Date().toISOString())}
-                                            mode="time"
-                                            is24Hour={true}
-                                            display="default"
-                                            onChange={onChangeTime}
-                                        />
-                                    )
-                                }
-
-                                <Select
-                                    selectedIndex={selectedIndex}
-                                    onSelect={(index) => setSelectedIndex(index as IndexPath)}
-                                    value={newEntry.category}
-                                    style={styles.spacing}
-                                    label="Category"
-                                >
-                                    <SelectItem title='Normal' />
-                                    <SelectItem title='Lucid' />
-                                    <SelectItem title='Nightmare' />
-                                    <SelectItem title='Recurring' />
-                                </Select>
-                                {isRecording ? <StopButton /> : <RecordButton />}
-
-                                <Button onPress={handleAddEditEntry}>
-                                    {isEditMode ? 'Update Entry' : 'Save Entry'}
-                                </Button>
-                            </ScrollView>
-                        </Card>
-                    </TouchableWithoutFeedback>
-                </Modal>
-            </Layout>
+                                </ScrollView>
+                            </Card>
+                        </TouchableWithoutFeedback>
+                    </Modal>
+                </Layout>
+            </GestureHandlerRootView>
         </ApplicationProvider>
     );
 };
 
-
 // Dynamically calculate modal width based on screen width
 const screenWidth = Dimensions.get('window').width;
-const modalWidth = screenWidth * 0.9; // 90% of the screen width
+const modalWidth = screenWidth * 0.9;
 
-//Dynamic styling for modal width
+// Dynamic styling for modal width
 const dynamicStyles = StyleSheet.create({
     modalCard: {
-        width: modalWidth, // Use the dynamically calculated width
+        width: modalWidth,
         height: 650,
-        alignSelf: 'center', // Center the card
+        alignSelf: 'center',
     },
 });
 
@@ -482,7 +528,7 @@ const styles = StyleSheet.create({
     },
     card: {
         marginVertical: 4,
-        padding: 8
+        padding: 8,
     },
     buttonContainer: {
         flexDirection: 'row',
@@ -493,17 +539,17 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     spacing: {
-        marginBottom: 15, // Space between form elements
+        marginBottom: 15,
     },
     renderSpacing: {
-        marginBottom: 10, // Space between form elements
+        marginBottom: 10,
     },
     centerContent: {
-        alignItems: 'center', // Center content horizontally
+        alignItems: 'center',
     },
     label: {
         textAlign: 'left',
-        color: '#8894ac'
+        color: '#8894ac',
     },
     picker: {
         marginBottom: 15,
@@ -514,6 +560,9 @@ const styles = StyleSheet.create({
         marginLeft: 8,
         color: 'red',
     },
+    exportButton: {
+        marginTop: 20,
+    },
 });
 
-export default DreamJournalScreen;
+export default index;

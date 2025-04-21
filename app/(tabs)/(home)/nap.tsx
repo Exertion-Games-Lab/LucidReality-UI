@@ -186,7 +186,7 @@ export default function lucidDream() {
                     </Card>
                 </Layout>
                 <Layout style={styles.container}>
-                    <Timer defaultHours={4} defaultMinutes={0} />
+                    <Timer defaultHours={4} defaultMinutes={0} isFocused/>
 
                     <Link href="/nap" asChild>
                         <Button onPress={sessionActive ? endSession : startSession} style={styles.button}>
@@ -264,8 +264,7 @@ const stylesScreen = StyleSheet.create({
     },
     icon: {
         width: 25,
-        height: 25,
-        size: 50
+        height: 25
     },
     card: {
         backgroundColor: 'rgba(0,0,0,0.5)',
