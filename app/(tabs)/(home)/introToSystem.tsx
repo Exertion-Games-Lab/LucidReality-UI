@@ -106,7 +106,7 @@ export default function introToSystem() {
                 <Layout style={styles.container}>
                     <ScrollView>
                         <Layout style={stylesScreen.titleContainer}>
-                            <Text category='h5'>The system and our approach</Text>
+                            <Text category='h5'>The prototype and our approach</Text>
                             <Button
                                 style={stylesScreen.button}
                                 appearance='outline'
@@ -116,22 +116,22 @@ export default function introToSystem() {
                         </Layout>
                         <Card style={styles.card}>
                             <Text style={stylesScreen.titleCard} category='h6'>Our Approach</Text>
-                            <Text category='p1'>Our approach is based on the lucid dream technique 'Wake Back to Bed (WBTB)'. </Text>
+                            <Text category='p1'>Our approach is based on the lucid dream technique Wake-Back-to-Bed (WBTB). </Text>
                             <Text category='p1' style={stylesScreen.boldText}>Step 1 - SLEEP SESSION: </Text>
                             <Text category='p1'>Sleep as you normally would at night, recommended for minimum 4 hours. </Text>
-                            <Text category='p1' style={stylesScreen.boldText}>Step 2 - PLAY VR & STAY AWAKE: </Text>
-                            <Text category='p1'>Spend up to half hour playing VR. This will aid in dreaming about your chosen VR topic.  </Text>
+                            <Text category='p1' style={stylesScreen.boldText}>Step 2 - COGNITIVE TRAINING: </Text>
+                            <Text category='p1'>Turn on the prototype and practice becoming lucid with cues.  </Text>
                             <Text category='p1' style={stylesScreen.boldText}>Step 3 - LUCID DREAM: </Text>
-                            <Text category='p1'>Go back to bed and enjoy your lucid dream </Text>
+                            <Text category='p1'>Go back to bed and enjoy your lucid dream, </Text>
                         </Card>
                         <Layout style={styles.container}>
                             <Text status='primary' category='s1'>Our system consists of 3 major components:</Text>
                         </Layout>
 
                         <Card style={styles.card}>
-                            <Text style={stylesScreen.boldText} category='h6'>Stimulus devices</Text>
-                            <Text category='p1'>Stimulus devices include any devices that will directly aid in helping lucidity. For example, in the most basic setup, LEDs and Speakers are both devices that help a user reach lucidity. Other devices such as TACs, EMS, bubbler can all provide extra help to achive lucidity and modify content.</Text>
-                            <Text category='p1'>{'\n'}For now this app only supports LED, Audio and TACs but additional support is coming</Text>
+                            <Text style={stylesScreen.boldText} category='h6'>Cue modules</Text>
+                            <Text category='p1'>Cue modules include any devices that will directly aid in helping lucidity. For example, in the most basic setup, LEDs and Speakers are both devices that help a user reach lucidity. </Text>
+                            {/* <Text category='p1'>{'\n'}For now this app only supports LED, Audio.</Text> */}
                         </Card>
 
                         {
